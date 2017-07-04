@@ -1,0 +1,25 @@
+<launch>
+	<!-- Load the parameters to the parameter server from the yaml file-->
+	<!-- <node name="roboy_realsense"
+                pkg="roboy_realsense"
+                type="roboy_realsense"
+                respawn="false"
+                output="screen"
+        /> -->
+    <node name="PaBiRoboy_inverse_kinematics"
+                    pkg="roboy_dynamics"
+                    type="PaBiRoboy_inverse_kinematics"
+                    respawn="false"
+                    output="screen"
+            />
+	<node name="roboy_interface"
+            pkg="roboy_interface"
+            type="roboy_interface"
+            respawn="false"
+            output="screen"
+    />
+</launch>
+
+ <!-- FOR DEBUGGING USE THIS launch-prefix="xterm -e gdb -se devel/lib/myo_master/multiJoint" FOR VALGRIND USE THIS launch-prefix="valgrind -log-file=/home/letrend/workspace/ros_hierarchy/valgrind.log -leak-check=full"-->   
+ <!-- args="-c /home/roboy/workspace/roboy-ros-control/src/roboy_powerlink/powerlink/output/mnobd.cdc"	-->
+<!-- launch-prefix="gdb -ex run"-->

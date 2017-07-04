@@ -73,12 +73,14 @@ add_executable(roboy_interface ${QT_SOURCES} ${QT_RESOURCES_CPP} ${QT_FORMS_HPP}
 add_dependencies(roboy_interface roboy_communication_middleware_gencpp)
 target_link_libraries(roboy_interface ${QT_LIBRARIES} ${catkin_LIBRARIES} ${PROTOBUF_LIBRARY} roboy_managing_node ${tinyxml_LIBRARIES} )
 
-add_executable(pabiroboy_inverse_kinematics src/PaBiRoboy_inverse_kinematics.cpp )
-add_dependencies(pabiroboy_inverse_kinematics roboy_communication_middleware_gencpp)
-target_link_libraries(pabiroboy_inverse_kinematics ${catkin_LIBRARIES} )
-
 ##############################################################################
 # Installation
 ##############################################################################
-install(TARGETS roboy_interface pabiroboy_inverse_kinematics RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+install(TARGETS roboy_interface
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+install(FILES
+        package.xml
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+        )
 
