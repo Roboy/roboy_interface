@@ -17,6 +17,7 @@
   <build_depend>roboy_communication_middleware</build_depend>
   <build_depend>roboy_realsense</build_depend>
   <build_depend>cv_bridge</build_depend>
+  <build_depend>common_utilities</build_depend>
   <run_depend>roboy_managing_node</run_depend>
   <run_depend>qt_build</run_depend>
   <run_depend>roscpp</run_depend>
@@ -24,5 +25,5 @@
   <run_depend>roboy_communication_middleware</run_depend>
   <run_depend>roboy_realsense</run_depend>
   <run_depend>cv_bridge</run_depend>
- 
+  <run_depend>common_utilities</run_depend>
 </package>

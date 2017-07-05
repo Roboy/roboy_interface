@@ -20,9 +20,10 @@ include_directories(
 ##############################################################################
 
 # qt_build provides the qt cmake glue, roscpp the comms for a default talker
-find_package(catkin REQUIRED COMPONENTS qt_build roscpp pcl_ros roboy_communication_middleware cv_bridge roboy_managing_node)
-catkin_package(CATKIN_DEPENDS roboy_managing_node roboy_communication_middleware )
-include_directories(${catkin_INCLUDE_DIRS})
+find_package(catkin REQUIRED COMPONENTS qt_build roscpp pcl_ros roboy_communication_middleware cv_bridge
+        roboy_managing_node common_utilities)
+catkin_package(CATKIN_DEPENDS roboy_managing_node roboy_communication_middleware common_utilities)
+include_directories(${catkin_INCLUDE_DIRS} ../common_utilities/include)
 
 
 # Eigen
@@ -71,7 +72,8 @@ set(QT_SOURCES src/main_window.cpp src/main.cpp qcustomplot/qcustomplot.cpp)
 
 add_executable(roboy_interface ${QT_SOURCES} ${QT_RESOURCES_CPP} ${QT_FORMS_HPP} ${QT_MOC_HPP} )
 add_dependencies(roboy_interface roboy_communication_middleware_gencpp)
-target_link_libraries(roboy_interface ${QT_LIBRARIES} ${catkin_LIBRARIES} ${PROTOBUF_LIBRARY} roboy_managing_node ${tinyxml_LIBRARIES} )
+target_link_libraries(roboy_interface ${QT_LIBRARIES} ${catkin_LIBRARIES} ${PROTOBUF_LIBRARY} roboy_managing_node
+        ${tinyxml_LIBRARIES} rviz_visualization)
 
 ##############################################################################
 # Installation

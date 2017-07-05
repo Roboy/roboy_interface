@@ -25,6 +25,7 @@
 #include <roboy_communication_middleware/JointAngle.h>
 #include <roboy_communication_middleware/ArucoPose.h>
 #include <roboy_communication_middleware/DanceCommand.h>
+#include <roboy_communication_middleware/DarkRoomSensor.h>
 #include <roboy_communication_middleware/InverseKinematics.h>
 #include <geometry_msgs/Pose.h>
 #include <tinyxml.h>
@@ -33,6 +34,7 @@
 #include <map>
 #include <Eigen/Core>
 #include <Eigen/Dense>
+#include <common_utilities/rviz_visualization.hpp>
 
 #define RUN_IN_THREAD
 #define NUMBER_OF_FPGAS 5
@@ -53,7 +55,7 @@ using namespace cv;
 
 namespace interface {
 
-class MainWindow : public QMainWindow {
+class MainWindow : public QMainWindow, rviz_visualization {
 Q_OBJECT
 
 public:
@@ -74,7 +76,11 @@ private:
     void JointCommand(const roboy_communication_middleware::JointCommand::ConstPtr& msg);
     void ArucoPose(const roboy_communication_middleware::ArucoPose::ConstPtr& msg);
     float calculateAngleBetween(int aruco0, int aruco1, int aruco2, int aruco3);
+	double calculateAngleBetween(Vector3d &sensor0, Vector3d &sensor1);
 	void DanceCommand(const roboy_communication_middleware::DanceCommand::ConstPtr &msg);
+	void DarkRoomSensor(const roboy_communication_middleware::DarkRoomSensor::ConstPtr &msg);
+	std::pair<Vector3d, Vector3d> best_plane_from_points(const map<int, Vector3d> & c);
+	double phi = 0;// angle left lower leg to world
 public Q_SLOTS:
 	void on_actionAbout_triggered();
     void updateSetPointsMotorControl(int percent);
@@ -93,6 +99,7 @@ public Q_SLOTS:
     void stopButtonClicked();
     void danceBitch();
     void displayImage();
+	void resetPose();
 Q_SIGNALS:
     void newData(int id);
     void drawImage();
@@ -100,8 +107,8 @@ private:
 	Ui::MainWindowDesign ui;
     ros::NodeHandlePtr nh;
     ros::Publisher motorConfig, motorRecordConfig, motorTrajectory, motorTrajectoryControl, hipCenter_pub,
-            jointCommand_pub, jointAnglesOffset_pub;
-    ros::Subscriber motorStatus, motorRecord, jointStatus, jointCommand, realsense, arucoPose, danceCommand;
+            jointCommand_pub, jointAnglesOffset_pub, visualization_pub;
+    ros::Subscriber motorStatus, motorRecord, jointStatus, jointCommand, realsense, arucoPose, danceCommand, darkroom_sub;
     QVector<double> time;
     QVector<double> motorData[NUMBER_OF_FPGAS][NUMBER_OF_MOTORS_PER_FPGA][4];
 	QVector<double> jointData[NUMBER_OF_FPGAS][NUMBER_OF_JOINT_SENSORS][4];
@@ -123,6 +130,7 @@ private:
     vector<float> angle, jointAngleOffset, setPointAngle;
     map<int, Vector3f> arucoMarkerPosition;
     map<int, Vector2f> arucoMarkerCenter;
+	map<int, Vector3d> sensor_position;
     QTimer* Timer;   // A timer is needed in GUI application
     QPixmap pixmap;
     const float image_scale = 0.5f;
