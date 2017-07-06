@@ -97,9 +97,10 @@ public Q_SLOTS:
     void pauseMovement();
     void loopMovement();
     void stopButtonClicked();
-    void danceBitch();
+    void danceToggle();
     void displayImage();
 	void resetPose();
+	void danceController();
 Q_SIGNALS:
     void newData(int id);
     void drawImage();
@@ -114,7 +115,7 @@ private:
 	QVector<double> jointData[NUMBER_OF_FPGAS][NUMBER_OF_JOINT_SENSORS][4];
 	float sign[NUMBER_OF_JOINT_SENSORS] = {1.0f,1.0f,1.0f,1.0f};
 	bool motorConnected[NUMBER_OF_FPGAS][NUMBER_OF_MOTORS_PER_FPGA], jointControl = false, motorControl = false,
-            dance = false, initializeJointAngles = true;
+            dance = false, initializeJointAngles = true, visualServoing = false;
     long int counter = 0;
     int samples_per_plot = 300;
     boost::shared_ptr<ros::AsyncSpinner> spinner;
@@ -127,6 +128,7 @@ private:
     Mat img;
     cv_bridge::CvImageConstPtr cv_ptr;
     QImage imdisplay;
+	Vector3d targetPosition;
     vector<float> angle, jointAngleOffset, setPointAngle;
     map<int, Vector3f> arucoMarkerPosition;
     map<int, Vector2f> arucoMarkerCenter;

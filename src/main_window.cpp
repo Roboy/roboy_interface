@@ -69,11 +69,12 @@ namespace interface {
         QObject::connect(ui.loop, SIGNAL(clicked()), this, SLOT(loopMovement()));
         QObject::connect(ui.stop_button_motorControl, SIGNAL(clicked()), this, SLOT(stopButtonClicked()));
         QObject::connect(ui.stop_button_jointControl, SIGNAL(clicked()), this, SLOT(stopButtonClicked()));
-        QObject::connect(ui.dance_bitch, SIGNAL(clicked()), this, SLOT(danceBitch()));
-        QObject::connect(ui.resetpose, SIGNAL(clicked()), this, SLOT(resetPose()));
+        QObject::connect(ui.dance, SIGNAL(clicked()), this, SLOT(danceToggle()));
+        QObject::connect(ui.reset_pose, SIGNAL(clicked()), this, SLOT(resetPose()));
+        QObject::connect(ui.visual_servoing, SIGNAL(clicked()), this, SLOT(danceController()));
         ui.stop_button_motorControl->setStyleSheet("background-color: red");
         ui.stop_button_jointControl->setStyleSheet("background-color: red");
-        ui.dance_bitch->setStyleSheet("background-color: green");
+        ui.dance->setStyleSheet("background-color: green");
 
         nh = ros::NodeHandlePtr(new ros::NodeHandle);
         if (!ros::isInitialized()) {
@@ -186,6 +187,7 @@ namespace interface {
         joint_command_msg.angle.push_back(0);
         joint_command_msg.angle.push_back(0);
 
+        targetPosition = Vector3d(0,0,0);
     }
 
     MainWindow::~MainWindow() {}
@@ -870,9 +872,9 @@ namespace interface {
         }
     }
 
-    void MainWindow::danceBitch() {
+    void MainWindow::danceToggle() {
         ROS_INFO("dance button clicked");
-        dance = ui.dance_bitch->isChecked();
+        dance = ui.dance->isChecked();
         if (dance) {
             jointControl = false;
             motorControl = false;
@@ -945,6 +947,11 @@ namespace interface {
         setPointAngle[3] = -80;
     }
 
+    void MainWindow::danceController(){
+        visualServoing = ui.visual_servoing->isChecked();
+        ROS_INFO("visual servoing %s", (visualServoing?"activated":"deactivated"));
+    }
+
     void MainWindow::JointCommand(const roboy_communication_middleware::JointCommand::ConstPtr &msg) {
         for (uint joint = 0; joint < msg->angle.size(); joint++)
             setPointAngle[joint] = msg->angle[joint];
@@ -977,28 +984,33 @@ namespace interface {
     }
 
     void MainWindow::DanceCommand(const roboy_communication_middleware::DanceCommand::ConstPtr &msg) {
-        roboy_communication_middleware::InverseKinematics service_msg;
-        service_msg.request.targetPosition.x = msg->x;
-        service_msg.request.targetPosition.y = msg->y;
-        service_msg.request.targetPosition.z = 0;
-        service_msg.request.lighthouse_sensor_id = 4; // hip center lighthouse sensor
-        service_msg.request.initial_angles.push_back(jointData[0][0][1].back());
-        service_msg.request.initial_angles.push_back(jointData[0][1][1].back());
-        service_msg.request.initial_angles.push_back(jointData[0][2][1].back());
-        service_msg.request.initial_angles.push_back(jointData[0][3][1].back());
-        service_msg.request.initial_angles.push_back(phi);
-        service_msg.request.inspect = true;
-        if (ik_srv.call(service_msg)) {
-            setPointAngle[0] = service_msg.response.angles[0];
-            setPointAngle[1] = service_msg.response.angles[1];
-            setPointAngle[2] = service_msg.response.angles[2];
-            setPointAngle[3] = service_msg.response.angles[3];
-        } else {
-            setPointAngle[0] = -80;
-            setPointAngle[1] = 80;
-            setPointAngle[2] = 80;
-            setPointAngle[3] = -80;
-            ROS_WARN("Inverse Kinematics failed, is the target point reachable?");
+        if(!visualServoing) {
+            roboy_communication_middleware::InverseKinematics service_msg;
+            service_msg.request.targetPosition.x = msg->pos.x;
+            service_msg.request.targetPosition.y = msg->pos.y;
+            service_msg.request.targetPosition.z = msg->pos.z;
+            service_msg.request.lighthouse_sensor_id = 4; // hip center lighthouse sensor
+            service_msg.request.initial_angles.push_back(jointData[0][0][1].back());
+            service_msg.request.initial_angles.push_back(jointData[0][1][1].back());
+            service_msg.request.initial_angles.push_back(jointData[0][2][1].back());
+            service_msg.request.initial_angles.push_back(jointData[0][3][1].back());
+            service_msg.request.initial_angles.push_back(phi);
+            service_msg.request.inspect = true;
+            if (ik_srv.call(service_msg)) {
+                setPointAngle[0] = service_msg.response.angles[0];
+                setPointAngle[1] = service_msg.response.angles[1];
+                setPointAngle[2] = service_msg.response.angles[2];
+                setPointAngle[3] = service_msg.response.angles[3];
+            } else {
+                setPointAngle[0] = -80;
+                setPointAngle[1] = 80;
+                setPointAngle[2] = 80;
+                setPointAngle[3] = -80;
+                ROS_WARN("Inverse Kinematics failed, is the target point reachable?");
+            }
+        }else{
+            ROS_INFO("received new targetPoint %lf\t%lf\t%lf", msg->pos.x,msg->pos.y,msg->pos.z);
+            targetPosition = Vector3d(msg->pos.x,msg->pos.y,msg->pos.z);
         }
     }
 
@@ -1021,6 +1033,30 @@ namespace interface {
         phi = angle + jointData[0][0][1].back() + jointData[0][1][1].back();
         sprintf(str,"%lf", phi);
         publishText(sensor_position[5],str,"world","angle_to_world_ankle_left",668,COLOR(1,0,0,1),1,0.05);
+
+        if(visualServoing){
+            roboy_communication_middleware::InverseKinematics service_msg;
+            service_msg.request.targetPosition.x = targetPosition[0];
+            service_msg.request.targetPosition.y = targetPosition[1];
+            service_msg.request.targetPosition.z = 0;
+            service_msg.request.ankle_x = sensor_position[5][0];
+            service_msg.request.ankle_y = sensor_position[5][1];
+            service_msg.request.lighthouse_sensor_id = 4; // hip center lighthouse sensor
+            service_msg.request.initial_angles.push_back(jointData[0][0][1].back());
+            service_msg.request.initial_angles.push_back(jointData[0][1][1].back());
+            service_msg.request.initial_angles.push_back(jointData[0][2][1].back());
+            service_msg.request.initial_angles.push_back(jointData[0][3][1].back());
+            service_msg.request.initial_angles.push_back(phi);
+            service_msg.request.inspect = true;
+            ik_srv.call(service_msg);
+
+            ROS_INFO_THROTTLE(1,"targetPosition:\n%lf\t%lf\t%lf\n"
+                    "resultPosition:\n%lf\t%lf\t%lf",
+                              targetPosition[0],targetPosition[1],targetPosition[2],
+                              service_msg.response.resultPosition.x, service_msg.response.resultPosition.y,
+                              service_msg.response.resultPosition.z);
+        }
+
 //        if(sensor_position.size()>=3) {// we need three sensors for calculating the plane
 //            std::pair<Vector3d, Vector3d> plane = best_plane_from_points(sensor_position);
 //            ROS_INFO_STREAM_THROTTLE(1,"centroid\n" << plane.first << "\nnormal:\n" << plane.second);

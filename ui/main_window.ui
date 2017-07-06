@@ -553,7 +553,7 @@
      <x>0</x>
      <y>0</y>
      <width>1305</width>
-     <height>25</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -3006,7 +3006,7 @@
         <attribute name="title">
          <string>dance_control</string>
         </attribute>
-        <widget class="QPushButton" name="dance_bitch">
+        <widget class="QPushButton" name="dance">
          <property name="geometry">
           <rect>
            <x>0</x>
@@ -3022,7 +3022,7 @@
           </sizepolicy>
          </property>
          <property name="text">
-          <string>DANCE BITCH</string>
+          <string>dance</string>
          </property>
          <property name="checkable">
           <bool>true</bool>
@@ -3154,7 +3154,7 @@
           </property>
          </widget>
         </widget>
-        <widget class="QPushButton" name="resetpose">
+        <widget class="QPushButton" name="reset_pose">
          <property name="geometry">
           <rect>
            <x>0</x>
@@ -3174,6 +3174,28 @@
          </property>
          <property name="checkable">
           <bool>false</bool>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="visual_servoing">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>480</y>
+           <width>311</width>
+           <height>81</height>
+          </rect>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>visual servoing</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
          </property>
         </widget>
        </widget>
