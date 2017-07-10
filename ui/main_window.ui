@@ -553,7 +553,7 @@
      <x>0</x>
      <y>0</y>
      <width>1305</width>
-     <height>22</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -3095,7 +3095,7 @@
            </rect>
           </property>
           <property name="text">
-           <string>80</string>
+           <string>0.01</string>
           </property>
          </widget>
          <widget class="QLabel" name="label_52">
@@ -3137,7 +3137,7 @@
            </rect>
           </property>
           <property name="text">
-           <string>20</string>
+           <string>0.01</string>
           </property>
          </widget>
          <widget class="QLabel" name="label_53">
@@ -3196,6 +3196,110 @@
          </property>
          <property name="checkable">
           <bool>true</bool>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="integralMaxX">
+         <property name="geometry">
+          <rect>
+           <x>150</x>
+           <y>130</y>
+           <width>121</width>
+           <height>31</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>0.1</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="integralMaxY">
+         <property name="geometry">
+          <rect>
+           <x>150</x>
+           <y>160</y>
+           <width>121</width>
+           <height>31</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>0.1</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="integralMinY">
+         <property name="geometry">
+          <rect>
+           <x>150</x>
+           <y>220</y>
+           <width>121</width>
+           <height>31</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>-0.1</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="integralMinX">
+         <property name="geometry">
+          <rect>
+           <x>150</x>
+           <y>190</y>
+           <width>121</width>
+           <height>31</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>-0.1</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_54">
+         <property name="geometry">
+          <rect>
+           <x>40</x>
+           <y>130</y>
+           <width>101</width>
+           <height>31</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>integralMaxX</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_56">
+         <property name="geometry">
+          <rect>
+           <x>40</x>
+           <y>160</y>
+           <width>101</width>
+           <height>31</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>integralMaxY</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_55">
+         <property name="geometry">
+          <rect>
+           <x>40</x>
+           <y>190</y>
+           <width>101</width>
+           <height>31</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>integralMinX</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_57">
+         <property name="geometry">
+          <rect>
+           <x>40</x>
+           <y>220</y>
+           <width>101</width>
+           <height>31</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>integralMinY</string>
          </property>
         </widget>
        </widget>

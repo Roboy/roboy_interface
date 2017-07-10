@@ -177,17 +177,24 @@ namespace interface {
 
         setPointAngle.resize(4);
 
-        joint_command_msg.link_name.push_back("Groin_1");
-        joint_command_msg.link_name.push_back("Knee_1");
-        joint_command_msg.link_name.push_back("Groin_2");
-        joint_command_msg.link_name.push_back("Knee_2");
+        joint_command_msg.link_name.push_back("Groin_right");
+        joint_command_msg.link_name.push_back("Knee_right");
+        joint_command_msg.link_name.push_back("Groin_left");
+        joint_command_msg.link_name.push_back("Knee_left");
 
         joint_command_msg.angle.push_back(0);
         joint_command_msg.angle.push_back(0);
         joint_command_msg.angle.push_back(0);
         joint_command_msg.angle.push_back(0);
 
-        targetPosition = Vector3d(0,0,0);
+        targetPosition = Vector3d(0.5,0.5,0);
+
+        errorVisualServoing = Vector2d(0,0);
+        errorVisualServoing_prev = Vector2d(0,0);
+        resultVisualServoing = Vector2d(0,0);
+        integralVisualServoing = Vector2d(0,0);
+        integralVisualServoingMax = Vector2d(0,0);
+        integralVisualServoingMin = Vector2d(0,0);
     }
 
     MainWindow::~MainWindow() {}
@@ -945,6 +952,12 @@ namespace interface {
         setPointAngle[1] = 80;
         setPointAngle[2] = 80;
         setPointAngle[3] = -80;
+        errorVisualServoing = Vector2d(0,0);
+        errorVisualServoing_prev = Vector2d(0,0);
+        resultVisualServoing = Vector2d(0,0);
+        integralVisualServoing = Vector2d(0,0);
+        integralVisualServoingMax = Vector2d(0,0);
+        integralVisualServoingMin = Vector2d(0,0);
     }
 
     void MainWindow::danceController(){
@@ -1018,29 +1031,38 @@ namespace interface {
         ROS_INFO_THROTTLE(5, "receiving DarkRoom sensor locations for %ld sensors", msg->ids.size());
         uint i = 0;
         for(auto position:msg->position){
-            sensor_position[msg->ids[i]] = Vector3d(position.x, position.y, position.z);
+            sensor_position[sensor_map[msg->ids[i]]] = Vector3d(position.x, position.y, position.z);
+            char str[10];
+            sprintf(str, "%d", sensor_map[msg->ids[i]]);
+            publishText(sensor_position[sensor_map[msg->ids[i]]],str,"world","sensor_names",i+9000/*random message id*/,
+                        COLOR(0, 1, 0, 0.1),1,0.05);
             i++;
         }
-        if(sensor_position.find(3)==sensor_position.end() && sensor_position.find(7)==sensor_position.end()){
-            ROS_WARN("sensor 3 and/or 7 not active");
+        if(sensor_position.find(3)==sensor_position.end() && sensor_position.find(5)==sensor_position.end()){
+            ROS_WARN("sensor 3 and/or 5 not active");
             return;
         }
-        //calculate angle to world from hip orientation (sensor 3 and 7) via kinematic chain
-        double angle = calculateAngleBetween(sensor_position[7], sensor_position[3]);
+        //calculate angle to world from hip orientation (sensor 3 and 5) via kinematic chain
+        double angle = calculateAngleBetween(sensor_position[5], sensor_position[3]);
         char str[20];
         sprintf(str,"%lf", angle);
-        publishText(sensor_position[0],str,"world","angle_to_world_hip",667,COLOR(1,0,0,1),1,0.05);
+        publishText(sensor_position[4],str,"world","angle_to_world_hip",667,COLOR(1,0,0,1),1,0.05);
         phi = angle + jointData[0][0][1].back() + jointData[0][1][1].back();
         sprintf(str,"%lf", phi);
-        publishText(sensor_position[5],str,"world","angle_to_world_ankle_left",668,COLOR(1,0,0,1),1,0.05);
+        publishText(sensor_position[0],str,"world","angle_to_world_ankle_left",668,COLOR(1,0,0,1),1,0.05);
 
+        relativeFrame.setOrigin(tf::Vector3(sensor_position[0][0], sensor_position[0][1], sensor_position[0][2]));
+        tf::Quaternion quat;
+        quat.setRPY(M_PI_2, 0, M_PI);
+        relativeFrame.setRotation(quat);
+        tf_broadcaster.sendTransform(tf::StampedTransform(relativeFrame,ros::Time::now(),"world","ankle_left"));
         if(visualServoing){
             roboy_communication_middleware::InverseKinematics service_msg;
-            service_msg.request.targetPosition.x = targetPosition[0];
-            service_msg.request.targetPosition.y = targetPosition[1];
+            service_msg.request.targetPosition.x = targetPosition[0]+sensor_position[4][0] + resultVisualServoing[0];
+            service_msg.request.targetPosition.y = targetPosition[1]+sensor_position[4][1] + resultVisualServoing[1];
             service_msg.request.targetPosition.z = 0;
-            service_msg.request.ankle_x = sensor_position[5][0];
-            service_msg.request.ankle_y = sensor_position[5][1];
+            service_msg.request.ankle_x = 0;
+            service_msg.request.ankle_y = 0;
             service_msg.request.lighthouse_sensor_id = 4; // hip center lighthouse sensor
             service_msg.request.initial_angles.push_back(jointData[0][0][1].back());
             service_msg.request.initial_angles.push_back(jointData[0][1][1].back());
@@ -1055,6 +1077,25 @@ namespace interface {
                               targetPosition[0],targetPosition[1],targetPosition[2],
                               service_msg.response.resultPosition.x, service_msg.response.resultPosition.y,
                               service_msg.response.resultPosition.z);
+            Vector2d resultPosition(service_msg.response.resultPosition.x, service_msg.response.resultPosition.y);
+            Vector2d targetPosition(targetPosition[0]+sensor_position[0][0], targetPosition[1]+sensor_position[0][1]);
+            errorVisualServoing = targetPosition-resultPosition;
+            errorVisualServoing_prev = errorVisualServoing;
+
+            Vector2d pterm = atof(ui.Kp_danceControl->text().toStdString().c_str())*errorVisualServoing;
+            Vector2d dterm = atof(ui.Kd_danceControl->text().toStdString().c_str())*(errorVisualServoing-errorVisualServoing_prev);
+            integralVisualServoing += atof(ui.Ki_danceControl->text().toStdString().c_str())*errorVisualServoing;
+            if (integralVisualServoing[0] >= atof(ui.integralMaxX->text().toStdString().c_str())){
+                integralVisualServoing[0] = integralVisualServoingMax[0];
+            } else if (integralVisualServoing[0] <= atof(ui.integralMinX->text().toStdString().c_str())){
+                integralVisualServoing[0] = integralVisualServoingMin[0];
+            }
+            if (integralVisualServoing[1] >= atof(ui.integralMaxY->text().toStdString().c_str())){
+                integralVisualServoing[1] = integralVisualServoingMax[1];
+            } else if (integralVisualServoing[1] <= atof(ui.integralMinY->text().toStdString().c_str())){
+                integralVisualServoing[1] = integralVisualServoingMin[1];
+            }
+            resultVisualServoing = pterm + dterm + integralVisualServoing;
         }
 
 //        if(sensor_position.size()>=3) {// we need three sensors for calculating the plane
@@ -1233,7 +1274,7 @@ namespace interface {
                 setpoints[10] = (ui.allMotors->value() + 50) * 20;
                 setpoints[11] = (ui.allMotors->value() + 50) * 20;
                 setpoints[12] = (ui.allMotors->value() + 50) * 20;
-                setpoints[13] = (ui.allMotors->value() + 50) * 0;
+                setpoints[13] = (ui.allMotors->value() + 50) * 20;
                 break;
         }
         for (int motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
@@ -1297,8 +1338,8 @@ namespace interface {
         for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
             msg.motors.push_back(motor);
             msg.control_mode.push_back(ui.control_mode->value());
-            msg.outputPosMax.push_back(1000); // pwm max
-            msg.outputNegMax.push_back(-1000); // pwm min
+            msg.outputPosMax.push_back(2000); // pwm max
+            msg.outputNegMax.push_back(-2000); // pwm min
             msg.spPosMax.push_back(100000000);
             msg.spNegMax.push_back(-100000000);
             msg.IntegralPosMax.push_back(100);

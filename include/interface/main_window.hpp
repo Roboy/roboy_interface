@@ -35,6 +35,8 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include <common_utilities/rviz_visualization.hpp>
+#include <tf/tf.h>
+#include <tf/transform_broadcaster.h>
 
 #define RUN_IN_THREAD
 #define NUMBER_OF_FPGAS 5
@@ -138,6 +140,21 @@ private:
     const float image_scale = 0.5f;
     roboy_communication_middleware::JointCommand joint_command_msg;
     ros::ServiceClient ik_srv;
+	Vector2d errorVisualServoing, errorVisualServoing_prev, resultVisualServoing, integralVisualServoing,
+			integralVisualServoingMax, integralVisualServoingMin;
+	tf::Transform relativeFrame;
+	tf::TransformBroadcaster tf_broadcaster;
+	map<int,int> sensor_map{
+			{5,0},
+			{1,1},
+			{2,2},
+			{3,3},
+			{0,4},
+			{7,5},
+			{8,6},
+			{4,7},
+			{6,8},
+	};
 };
 
 }  // namespace interface
