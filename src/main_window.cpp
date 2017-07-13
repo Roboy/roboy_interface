@@ -89,6 +89,7 @@ namespace interface {
         jointStatus = nh->subscribe("/roboy/middleware/JointStatus", 1, &MainWindow::JointStatus, this);
 //    jointCommand = nh->subscribe("/roboy/middleware/JointCommand", 1, &MainWindow::JointCommand, this);
         danceCommand = nh->subscribe("/roboy/middleware/DanceCommand", 1, &MainWindow::DanceCommand, this);
+        danceCommand_pub = nh->advertise<roboy_communication_middleware::DanceCommand>( "/roboy/middleware/DanceCommand", 1);
         realsense = nh->subscribe("/roboy/middleware/realsense", 1, &MainWindow::receiveImage, this);
         arucoPose = nh->subscribe("/roboy/middleware/ArucoPose", 1, &MainWindow::ArucoPose, this);
         motorConfig = nh->advertise<roboy_communication_middleware::MotorConfig>("/roboy/middleware/MotorConfig", 1);
@@ -108,6 +109,8 @@ namespace interface {
                 "/roboy/middleware/PaBiRoboy/inverseKinematics");
         darkroom_sub = nh->subscribe("/roboy/middleware/DarkRoom/sensor_location", 1, &MainWindow::DarkRoomSensor, this);
         visualization_pub = nh->advertise<visualization_msgs::Marker>("visualization_marker", 100);
+
+        interactive_marker_sub = nh->subscribe("/hip_position/feedback", 1, &MainWindow::InteractiveMarkerFeedback, this);
 
         spinner = boost::shared_ptr<ros::AsyncSpinner>(new ros::AsyncSpinner(5));
         spinner->start();
@@ -140,27 +143,35 @@ namespace interface {
 
         ui.relAngle0_plot->addGraph();
         ui.relAngle0_plot->graph(0)->setPen(QPen(color_pallette[0]));
+        ui.relAngle0_plot->addGraph();
+        ui.relAngle0_plot->graph(1)->setPen(QPen(Qt::gray));
         ui.relAngle0_plot->xAxis->setLabel("x");
         ui.relAngle0_plot->yAxis->setLabel("degrees");
-        ui.relAngle0_plot->yAxis->setRange(-360, 360);
+        ui.relAngle0_plot->yAxis->setRange(-100, 100);
 
         ui.relAngle1_plot->addGraph();
         ui.relAngle1_plot->graph(0)->setPen(QPen(color_pallette[1]));
+        ui.relAngle1_plot->addGraph();
+        ui.relAngle1_plot->graph(1)->setPen(QPen(Qt::gray));
         ui.relAngle1_plot->xAxis->setLabel("x");
         ui.relAngle1_plot->yAxis->setLabel("degrees");
-        ui.relAngle1_plot->yAxis->setRange(-360, 360);
+        ui.relAngle1_plot->yAxis->setRange(-100, 100);
 
         ui.relAngle2_plot->addGraph();
         ui.relAngle2_plot->graph(0)->setPen(QPen(color_pallette[2]));
+        ui.relAngle2_plot->addGraph();
+        ui.relAngle2_plot->graph(1)->setPen(QPen(Qt::gray));
         ui.relAngle2_plot->xAxis->setLabel("x");
         ui.relAngle2_plot->yAxis->setLabel("degrees");
-        ui.relAngle2_plot->yAxis->setRange(-360, 360);
+        ui.relAngle2_plot->yAxis->setRange(-100, 100);
 
         ui.relAngle3_plot->addGraph();
         ui.relAngle3_plot->graph(0)->setPen(QPen(color_pallette[3]));
+        ui.relAngle3_plot->addGraph();
+        ui.relAngle3_plot->graph(1)->setPen(QPen(Qt::gray));
         ui.relAngle3_plot->xAxis->setLabel("x");
         ui.relAngle3_plot->yAxis->setLabel("degrees");
-        ui.relAngle3_plot->yAxis->setRange(-360, 360);
+        ui.relAngle3_plot->yAxis->setRange(-100, 100);
 
         ui.relAngle0_plot->replot();
         ui.relAngle1_plot->replot();
@@ -304,18 +315,19 @@ namespace interface {
             for (uint joint = 0; joint < NUMBER_OF_JOINT_SENSORS; joint++) {
                 switch (joint) {
                     case 0:
-                        error[joint] = ui.joint0->value() - jointData[msg->id][joint][1].back();
+                        setPointAngle[joint] = ui.joint0->value();
                         break;
                     case 1:
-                        error[joint] = ui.joint1->value() - jointData[msg->id][joint][1].back();
+                        setPointAngle[joint] = ui.joint1->value();
                         break;
                     case 2:
-                        error[joint] = ui.joint2->value() - jointData[msg->id][joint][1].back();
+                        setPointAngle[joint] = ui.joint2->value();
                         break;
                     case 3:
-                        error[joint] = ui.joint3->value() - jointData[msg->id][joint][1].back();
+                        setPointAngle[joint] = ui.joint3->value();
                         break;
                 }
+                error[joint] = setPointAngle[joint] - jointData[msg->id][joint][1].back();
                 switch (joint) {
                     case 0: {
                         float pterm = atoi(ui.Kp_jointControl->text().toStdString().c_str()) * error[joint];
@@ -424,15 +436,22 @@ namespace interface {
                         break;
                     }
                 }
+                jointSetpointData[msg->id][joint].push_back(setPointAngle[joint]);
+                if (jointSetpointData[msg->id][joint].size() > samples_per_plot) {
+                    jointSetpointData[msg->id][joint].pop_front();
+                }
             }
-            ROS_WARN_THROTTLE(1, "\nsetpoint %f\tjointAngle %f\terror %f"
-                    "\nsetpoint %f\tjointAngle %f\terror %f"
-                    "\nsetpoint %f\tjointAngle %f\terror %f"
-                    "\nsetpoint %f\tjointAngle %f\terror %f",
-                              (float) ui.joint0->value(), jointData[msg->id][0][1].back(), error[0],
-                              (float) ui.joint1->value(), jointData[msg->id][1][1].back(), error[1],
-                              (float) ui.joint2->value(), jointData[msg->id][2][1].back(), error[2],
-                              (float) ui.joint3->value(), jointData[msg->id][3][1].back(), error[3]);
+            QString str;
+            str.sprintf("\nsetpoint %f\tjointAngle %f\terror %f"
+                                "\nsetpoint %f\tjointAngle %f\terror %f"
+                                "\nsetpoint %f\tjointAngle %f\terror %f"
+                                "\nsetpoint %f\tjointAngle %f\terror %f",
+                        setPointAngle[0], jointData[msg->id][0][1].back(), error[0],
+                        setPointAngle[1], jointData[msg->id][1][1].back(), error[1],
+                        setPointAngle[2], jointData[msg->id][2][1].back(), error[2],
+                        setPointAngle[3], jointData[msg->id][3][1].back(), error[3]);
+            ui.joint_console->append(str);
+            ui.joint_console->verticalScrollBar()->setValue(ui.joint_console->verticalScrollBar()->maximum());
         }
         if (dance) {
             ROS_INFO_THROTTLE(5, "dance control active");
@@ -553,15 +572,22 @@ namespace interface {
                         break;
                     }
                 }
+                jointSetpointData[msg->id][joint].push_back(setPointAngle[joint]);
+                if (jointSetpointData[msg->id][joint].size() > samples_per_plot) {
+                    jointSetpointData[msg->id][joint].pop_front();
+                }
             }
-            ROS_WARN_THROTTLE(1, "\nsetpoint %f\tjointAngle %f\terror %f"
-                    "\nsetpoint %f\tjointAngle %f\terror %f"
-                    "\nsetpoint %f\tjointAngle %f\terror %f"
-                    "\nsetpoint %f\tjointAngle %f\terror %f",
-                              setPointAngle[0], jointData[msg->id][0][1].back(), error[0],
-                              setPointAngle[1], jointData[msg->id][1][1].back(), error[1],
-                              setPointAngle[2], jointData[msg->id][2][1].back(), error[2],
-                              setPointAngle[3], jointData[msg->id][3][1].back(), error[3]);
+            QString str;
+            str.sprintf("\nsetpoint %f\tjointAngle %f\terror %f"
+                                "\nsetpoint %f\tjointAngle %f\terror %f"
+                                "\nsetpoint %f\tjointAngle %f\terror %f"
+                                "\nsetpoint %f\tjointAngle %f\terror %f",
+                        setPointAngle[0], jointData[msg->id][0][1].back(), error[0],
+                        setPointAngle[1], jointData[msg->id][1][1].back(), error[1],
+                        setPointAngle[2], jointData[msg->id][2][1].back(), error[2],
+                        setPointAngle[3], jointData[msg->id][3][1].back(), error[3]);
+            ui.dance_console->append(str);
+            ui.dance_console->verticalScrollBar()->setValue(ui.dance_console->verticalScrollBar()->maximum());
         }
         static int counter = 0;
         if ((counter++) % 3 == 0)
@@ -697,18 +723,22 @@ namespace interface {
                 break;
             case JOINT:
                 ui.relAngle0_plot->graph(0)->setData(time, jointData[0][0][1]);
+                ui.relAngle0_plot->graph(1)->setData(time, jointSetpointData[0][0]);
                 ui.relAngle0_plot->xAxis->rescale();
                 ui.relAngle0_plot->replot();
 
                 ui.relAngle1_plot->graph(0)->setData(time, jointData[0][1][1]);
+                ui.relAngle1_plot->graph(1)->setData(time, jointSetpointData[0][1]);
                 ui.relAngle1_plot->xAxis->rescale();
                 ui.relAngle1_plot->replot();
 
                 ui.relAngle2_plot->graph(0)->setData(time, jointData[0][2][1]);
+                ui.relAngle2_plot->graph(1)->setData(time, jointSetpointData[0][2]);
                 ui.relAngle2_plot->xAxis->rescale();
                 ui.relAngle2_plot->replot();
 
                 ui.relAngle3_plot->graph(0)->setData(time, jointData[0][3][1]);
+                ui.relAngle3_plot->graph(1)->setData(time, jointSetpointData[0][3]);
                 ui.relAngle3_plot->xAxis->rescale();
                 ui.relAngle3_plot->replot();
                 break;
@@ -890,6 +920,8 @@ namespace interface {
             setPointAngle[1] = 80;
             setPointAngle[2] = 80;
             setPointAngle[3] = -80;
+            tf::Vector3 pos(0.5,0.5,0);
+            make6DofMarker(false,visualization_msgs::InteractiveMarkerControl::MOVE_PLANE,pos,false,0.1,"ankle_left","hip_position","");
         }
     }
 
@@ -984,12 +1016,13 @@ namespace interface {
         return acos(a) * 180.0f / (float) M_PI; // 0..PI
     }
 
-    double MainWindow::calculateAngleBetween(Vector3d &sensor0, Vector3d &sensor1) {
+    double MainWindow::calculateAngleBetween(Vector3d &sensor0, Vector3d &sensor1, Vector3d &axis) {
         Vector3d line0 = sensor1 - sensor0;
-        Vector3d xAxis(1,0,0);
+        line0.normalize();
+        axis.normalize();
         float len1 = sqrtf(line0[0] * line0[0] + line0[1] * line0[1] + line0[2] * line0[2]);
 
-        float dot = line0[0] * xAxis[0] + line0[1] * xAxis[1] + line0[2] * xAxis[2];
+        float dot = line0[0] * axis[0] + line0[1] * axis[1] + line0[2] * axis[2];
 
         float a = dot / (len1);
 
@@ -997,34 +1030,10 @@ namespace interface {
     }
 
     void MainWindow::DanceCommand(const roboy_communication_middleware::DanceCommand::ConstPtr &msg) {
-        if(!visualServoing) {
-            roboy_communication_middleware::InverseKinematics service_msg;
-            service_msg.request.targetPosition.x = msg->pos.x;
-            service_msg.request.targetPosition.y = msg->pos.y;
-            service_msg.request.targetPosition.z = msg->pos.z;
-            service_msg.request.lighthouse_sensor_id = 4; // hip center lighthouse sensor
-            service_msg.request.initial_angles.push_back(jointData[0][0][1].back());
-            service_msg.request.initial_angles.push_back(jointData[0][1][1].back());
-            service_msg.request.initial_angles.push_back(jointData[0][2][1].back());
-            service_msg.request.initial_angles.push_back(jointData[0][3][1].back());
-            service_msg.request.initial_angles.push_back(phi);
-            service_msg.request.inspect = true;
-            if (ik_srv.call(service_msg)) {
-                setPointAngle[0] = service_msg.response.angles[0];
-                setPointAngle[1] = service_msg.response.angles[1];
-                setPointAngle[2] = service_msg.response.angles[2];
-                setPointAngle[3] = service_msg.response.angles[3];
-            } else {
-                setPointAngle[0] = -80;
-                setPointAngle[1] = 80;
-                setPointAngle[2] = 80;
-                setPointAngle[3] = -80;
-                ROS_WARN("Inverse Kinematics failed, is the target point reachable?");
-            }
-        }else{
-            ROS_INFO("received new targetPoint %lf\t%lf\t%lf", msg->pos.x,msg->pos.y,msg->pos.z);
-            targetPosition = Vector3d(msg->pos.x,msg->pos.y,msg->pos.z);
-        }
+        QString str;
+        str.sprintf("target position %lf\t%lf\t%lf",msg->pos.x,msg->pos.y,msg->pos.z);
+        ui.target_position->append(str);
+        ui.target_position->verticalScrollBar()->setValue(ui.target_position->verticalScrollBar()->maximum());
     }
 
     void MainWindow::DarkRoomSensor(const roboy_communication_middleware::DarkRoomSensor::ConstPtr &msg){
@@ -1042,25 +1051,43 @@ namespace interface {
             ROS_WARN("sensor 3 and/or 5 not active");
             return;
         }
+        vector<int> ids = {0,8,3,5};
+        std::pair<Vector3d, Vector3d> plane = best_plane_from_points(sensor_position,ids);
+//            ROS_INFO_STREAM_THROTTLE(1,"centroid\n" << plane.first << "\nnormal:\n" << plane.second);
+
+        if(plane.second[1]<0)
+            plane.second = -plane.second;
+
+        Vector3d hip_level = sensor_position[5]-sensor_position[3];
+        Vector3d y = plane.second.cross(hip_level);
+        Vector3d x = y.cross(plane.second);
+        x.normalize();
+        y.normalize();
+        plane.second.normalize();
+//        publishRay(plane.first,x,"world","pabi X", 666, COLOR(1,0,0,1), 1);
+//        publishRay(plane.first,y,"world","pabi Y", 666, COLOR(0,1,0,1), 1);
+//        publishRay(plane.first,plane.second,"world","pabi Z", 666, COLOR(0,0,1,1), 1);
+
         //calculate angle to world from hip orientation (sensor 3 and 5) via kinematic chain
-        double angle = calculateAngleBetween(sensor_position[5], sensor_position[3]);
+        double angle = calculateAngleBetween(sensor_position[3], sensor_position[5], x);
         char str[20];
         sprintf(str,"%lf", angle);
-        publishText(sensor_position[4],str,"world","angle_to_world_hip",667,COLOR(1,0,0,1),1,0.05);
-        phi = angle + jointData[0][0][1].back() + jointData[0][1][1].back();
+        publishText(sensor_position[3],str,"world","angle_to_world_hip",667,COLOR(1,0,0,1),1,0.05);
+        phi = angle + jointData[0][2][1].back() + jointData[0][3][1].back();
         sprintf(str,"%lf", phi);
         publishText(sensor_position[0],str,"world","angle_to_world_ankle_left",668,COLOR(1,0,0,1),1,0.05);
 
+        tf::Matrix3x3 rot(x[0],x[1],x[2],y[0],y[1],y[2],plane.second[0],plane.second[1],plane.second[2]);
         relativeFrame.setOrigin(tf::Vector3(sensor_position[0][0], sensor_position[0][1], sensor_position[0][2]));
-        tf::Quaternion quat;
-        quat.setRPY(M_PI_2, 0, M_PI);
-        relativeFrame.setRotation(quat);
+//        tf::Quaternion quat;
+//        quat.setRPY(M_PI_2, 0, M_PI);
+        relativeFrame.setBasis(rot);
         tf_broadcaster.sendTransform(tf::StampedTransform(relativeFrame,ros::Time::now(),"world","ankle_left"));
         if(visualServoing){
             roboy_communication_middleware::InverseKinematics service_msg;
-            service_msg.request.targetPosition.x = targetPosition[0]+sensor_position[4][0] + resultVisualServoing[0];
-            service_msg.request.targetPosition.y = targetPosition[1]+sensor_position[4][1] + resultVisualServoing[1];
-            service_msg.request.targetPosition.z = 0;
+            service_msg.request.targetPosition.x = targetPosition[0] + resultVisualServoing[0];
+            service_msg.request.targetPosition.y = targetPosition[1] + resultVisualServoing[1];
+            service_msg.request.targetPosition.z = targetPosition[2];
             service_msg.request.ankle_x = 0;
             service_msg.request.ankle_y = 0;
             service_msg.request.lighthouse_sensor_id = 4; // hip center lighthouse sensor
@@ -1069,14 +1096,22 @@ namespace interface {
             service_msg.request.initial_angles.push_back(jointData[0][2][1].back());
             service_msg.request.initial_angles.push_back(jointData[0][3][1].back());
             service_msg.request.initial_angles.push_back(phi);
-            service_msg.request.inspect = true;
-            ik_srv.call(service_msg);
+            service_msg.request.inspect = false;
+            if(!ik_srv.call(service_msg)){
+                return;
+            }
 
             ROS_INFO_THROTTLE(1,"targetPosition:\n%lf\t%lf\t%lf\n"
                     "resultPosition:\n%lf\t%lf\t%lf",
                               targetPosition[0],targetPosition[1],targetPosition[2],
                               service_msg.response.resultPosition.x, service_msg.response.resultPosition.y,
                               service_msg.response.resultPosition.z);
+
+            setPointAngle[0] = service_msg.response.angles[0];
+            setPointAngle[1] = service_msg.response.angles[1];
+            setPointAngle[2] = service_msg.response.angles[2];
+            setPointAngle[3] = service_msg.response.angles[3];
+
             Vector2d resultPosition(service_msg.response.resultPosition.x, service_msg.response.resultPosition.y);
             Vector2d targetPosition(targetPosition[0]+sensor_position[0][0], targetPosition[1]+sensor_position[0][1]);
             errorVisualServoing = targetPosition-resultPosition;
@@ -1097,24 +1132,26 @@ namespace interface {
             }
             resultVisualServoing = pterm + dterm + integralVisualServoing;
         }
-
-//        if(sensor_position.size()>=3) {// we need three sensors for calculating the plane
-//            std::pair<Vector3d, Vector3d> plane = best_plane_from_points(sensor_position);
-//            ROS_INFO_STREAM_THROTTLE(1,"centroid\n" << plane.first << "\nnormal:\n" << plane.second);
-//            publishRay(plane.first,plane.second,"world","pabi plane", 666, COLOR(0,0,1,1), 1);
-//        }else{
-//            ROS_WARN_THROTTLE(1,"cannot calculate pabi plane, there are only %ld sensors visible", sensor_position.size());
-//        }
     }
 
-    std::pair<Vector3d, Vector3d> MainWindow::best_plane_from_points(const map<int, Vector3d> & c)
+    void MainWindow::InteractiveMarkerFeedback(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &msg){
+        QString str;
+        str.sprintf("target position %lf\t%lf\t%lf",msg->pose.position.x, msg->pose.position.y, msg->pose.position.z);
+        targetPosition[0] = msg->pose.position.x;
+        targetPosition[1] = msg->pose.position.y;
+        targetPosition[2] = msg->pose.position.z;
+                ui.target_position->append(str);
+        ui.target_position->verticalScrollBar()->setValue(ui.target_position->verticalScrollBar()->maximum());
+    }
+
+    std::pair<Vector3d, Vector3d> MainWindow::best_plane_from_points(map<int, Vector3d> & c, vector<int> &ids)
     {
         // copy coordinates to  matrix in Eigen format
-        size_t num_atoms = c.size();
+        size_t num_atoms = ids.size();
         Eigen::Matrix< Vector3d::Scalar, Eigen::Dynamic, Eigen::Dynamic > coord(3, num_atoms);
         uint i = 0;
-        for(const auto &pos:c) {
-            coord.col(i) = pos.second;
+        for(auto &id:ids) {
+            coord.col(i) = c[id];
             i++;
         }
 

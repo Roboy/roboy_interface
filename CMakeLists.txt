@@ -21,7 +21,7 @@ include_directories(
 
 # qt_build provides the qt cmake glue, roscpp the comms for a default talker
 find_package(catkin REQUIRED COMPONENTS qt_build roscpp pcl_ros roboy_communication_middleware cv_bridge tf tf_conversions
-        roboy_managing_node common_utilities)
+        roboy_managing_node common_utilities interactive_markers)
 catkin_package(CATKIN_DEPENDS roboy_managing_node roboy_communication_middleware common_utilities)
 include_directories(${catkin_INCLUDE_DIRS} ../common_utilities/include)
 

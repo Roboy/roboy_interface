@@ -27,6 +27,7 @@
 #include <roboy_communication_middleware/DanceCommand.h>
 #include <roboy_communication_middleware/DarkRoomSensor.h>
 #include <roboy_communication_middleware/InverseKinematics.h>
+#include <visualization_msgs/InteractiveMarkerFeedback.h>
 #include <geometry_msgs/Pose.h>
 #include <tinyxml.h>
 #include <fstream>
@@ -78,10 +79,11 @@ private:
     void JointCommand(const roboy_communication_middleware::JointCommand::ConstPtr& msg);
     void ArucoPose(const roboy_communication_middleware::ArucoPose::ConstPtr& msg);
     float calculateAngleBetween(int aruco0, int aruco1, int aruco2, int aruco3);
-	double calculateAngleBetween(Vector3d &sensor0, Vector3d &sensor1);
+	double calculateAngleBetween(Vector3d &sensor0, Vector3d &sensor1, Vector3d &axis);
 	void DanceCommand(const roboy_communication_middleware::DanceCommand::ConstPtr &msg);
 	void DarkRoomSensor(const roboy_communication_middleware::DarkRoomSensor::ConstPtr &msg);
-	std::pair<Vector3d, Vector3d> best_plane_from_points(const map<int, Vector3d> & c);
+	void InteractiveMarkerFeedback(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &msg);
+	std::pair<Vector3d, Vector3d> best_plane_from_points(map<int, Vector3d> & c, vector<int> &ids);
 	double phi = 0;// angle left lower leg to world
 public Q_SLOTS:
 	void on_actionAbout_triggered();
@@ -110,11 +112,13 @@ private:
 	Ui::MainWindowDesign ui;
     ros::NodeHandlePtr nh;
     ros::Publisher motorConfig, motorRecordConfig, motorTrajectory, motorTrajectoryControl, hipCenter_pub,
-            jointCommand_pub, jointAnglesOffset_pub, visualization_pub;
-    ros::Subscriber motorStatus, motorRecord, jointStatus, jointCommand, realsense, arucoPose, danceCommand, darkroom_sub;
+            jointCommand_pub, jointAnglesOffset_pub, visualization_pub, danceCommand_pub;
+    ros::Subscriber motorStatus, motorRecord, jointStatus, jointCommand, realsense, arucoPose, danceCommand, darkroom_sub,
+            interactive_marker_sub;
     QVector<double> time;
     QVector<double> motorData[NUMBER_OF_FPGAS][NUMBER_OF_MOTORS_PER_FPGA][4];
 	QVector<double> jointData[NUMBER_OF_FPGAS][NUMBER_OF_JOINT_SENSORS][4];
+	QVector<double> jointSetpointData[NUMBER_OF_FPGAS][NUMBER_OF_JOINT_SENSORS];
 	float sign[NUMBER_OF_JOINT_SENSORS] = {1.0f,1.0f,1.0f,1.0f};
 	bool motorConnected[NUMBER_OF_FPGAS][NUMBER_OF_MOTORS_PER_FPGA], jointControl = false, motorControl = false,
             dance = false, initializeJointAngles = true, visualServoing = false;

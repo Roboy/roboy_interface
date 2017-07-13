@@ -3001,6 +3001,16 @@
           </property>
          </widget>
         </widget>
+        <widget class="QTextBrowser" name="joint_console">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>420</y>
+           <width>301</width>
+           <height>271</height>
+          </rect>
+         </property>
+        </widget>
        </widget>
        <widget class="QWidget" name="tab_3">
         <attribute name="title">
@@ -3010,7 +3020,7 @@
          <property name="geometry">
           <rect>
            <x>0</x>
-           <y>320</y>
+           <y>250</y>
            <width>311</width>
            <height>81</height>
           </rect>
@@ -3158,7 +3168,7 @@
          <property name="geometry">
           <rect>
            <x>0</x>
-           <y>400</y>
+           <y>330</y>
            <width>311</width>
            <height>81</height>
           </rect>
@@ -3180,7 +3190,7 @@
          <property name="geometry">
           <rect>
            <x>0</x>
-           <y>480</y>
+           <y>410</y>
            <width>311</width>
            <height>81</height>
           </rect>
@@ -3300,6 +3310,26 @@
          </property>
          <property name="text">
           <string>integralMinY</string>
+         </property>
+        </widget>
+        <widget class="QTextBrowser" name="dance_console">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>560</y>
+           <width>301</width>
+           <height>201</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QTextBrowser" name="target_position">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>500</y>
+           <width>301</width>
+           <height>51</height>
+          </rect>
          </property>
         </widget>
        </widget>
