@@ -89,7 +89,8 @@ namespace interface {
         jointStatus = nh->subscribe("/roboy/middleware/JointStatus", 1, &MainWindow::JointStatus, this);
 //    jointCommand = nh->subscribe("/roboy/middleware/JointCommand", 1, &MainWindow::JointCommand, this);
         danceCommand = nh->subscribe("/roboy/middleware/DanceCommand", 1, &MainWindow::DanceCommand, this);
-        danceCommand_pub = nh->advertise<roboy_communication_middleware::DanceCommand>( "/roboy/middleware/DanceCommand", 1);
+        danceCommand_pub = nh->advertise<roboy_communication_middleware::DanceCommand>("/roboy/middleware/DanceCommand",
+                                                                                       1);
         realsense = nh->subscribe("/roboy/middleware/realsense", 1, &MainWindow::receiveImage, this);
         arucoPose = nh->subscribe("/roboy/middleware/ArucoPose", 1, &MainWindow::ArucoPose, this);
         motorConfig = nh->advertise<roboy_communication_middleware::MotorConfig>("/roboy/middleware/MotorConfig", 1);
@@ -107,10 +108,12 @@ namespace interface {
                 "/roboy/middleware/JointAngleOffset", 1);
         ik_srv = nh->serviceClient<roboy_communication_middleware::InverseKinematics>(
                 "/roboy/middleware/PaBiRoboy/inverseKinematics");
-        darkroom_sub = nh->subscribe("/roboy/middleware/DarkRoom/sensor_location", 1, &MainWindow::DarkRoomSensor, this);
+        darkroom_sub = nh->subscribe("/roboy/middleware/DarkRoom/sensor_location", 1, &MainWindow::DarkRoomSensor,
+                                     this);
         visualization_pub = nh->advertise<visualization_msgs::Marker>("visualization_marker", 100);
 
-        interactive_marker_sub = nh->subscribe("/hip_position/feedback", 1, &MainWindow::InteractiveMarkerFeedback, this);
+        interactive_marker_sub = nh->subscribe("/hip_position/feedback", 1, &MainWindow::InteractiveMarkerFeedback,
+                                               this);
 
         spinner = boost::shared_ptr<ros::AsyncSpinner>(new ros::AsyncSpinner(5));
         spinner->start();
@@ -198,14 +201,14 @@ namespace interface {
         joint_command_msg.angle.push_back(0);
         joint_command_msg.angle.push_back(0);
 
-        targetPosition = Vector3d(0.5,0.5,0);
+        targetPosition = Vector3d(0.5, 0.5, 0);
 
-        errorVisualServoing = Vector2d(0,0);
-        errorVisualServoing_prev = Vector2d(0,0);
-        resultVisualServoing = Vector2d(0,0);
-        integralVisualServoing = Vector2d(0,0);
-        integralVisualServoingMax = Vector2d(0,0);
-        integralVisualServoingMin = Vector2d(0,0);
+        errorVisualServoing = Vector2d(0, 0);
+        errorVisualServoing_prev = Vector2d(0, 0);
+        resultVisualServoing = Vector2d(0, 0);
+        integralVisualServoing = Vector2d(0, 0);
+        integralVisualServoingMax = Vector2d(0, 0);
+        integralVisualServoingMin = Vector2d(0, 0);
     }
 
     MainWindow::~MainWindow() {}
@@ -920,8 +923,9 @@ namespace interface {
             setPointAngle[1] = 80;
             setPointAngle[2] = 80;
             setPointAngle[3] = -80;
-            tf::Vector3 pos(0.5,0.5,0);
-            make6DofMarker(false,visualization_msgs::InteractiveMarkerControl::MOVE_PLANE,pos,false,0.1,"ankle_left","hip_position","");
+            tf::Vector3 pos(0.5, 0.5, 0);
+            make6DofMarker(false, visualization_msgs::InteractiveMarkerControl::MOVE_PLANE, pos, false, 0.1,
+                           "ankle_left", "hip_position", "");
         }
     }
 
@@ -979,22 +983,22 @@ namespace interface {
         ui.camera_image->repaint();
     }
 
-    void MainWindow::resetPose(){
+    void MainWindow::resetPose() {
         setPointAngle[0] = -80;
         setPointAngle[1] = 80;
         setPointAngle[2] = 80;
         setPointAngle[3] = -80;
-        errorVisualServoing = Vector2d(0,0);
-        errorVisualServoing_prev = Vector2d(0,0);
-        resultVisualServoing = Vector2d(0,0);
-        integralVisualServoing = Vector2d(0,0);
-        integralVisualServoingMax = Vector2d(0,0);
-        integralVisualServoingMin = Vector2d(0,0);
+        errorVisualServoing = Vector2d(0, 0);
+        errorVisualServoing_prev = Vector2d(0, 0);
+        resultVisualServoing = Vector2d(0, 0);
+        integralVisualServoing = Vector2d(0, 0);
+        integralVisualServoingMax = Vector2d(0, 0);
+        integralVisualServoingMin = Vector2d(0, 0);
     }
 
-    void MainWindow::danceController(){
+    void MainWindow::danceController() {
         visualServoing = ui.visual_servoing->isChecked();
-        ROS_INFO("visual servoing %s", (visualServoing?"activated":"deactivated"));
+        ROS_INFO("visual servoing %s", (visualServoing ? "activated" : "deactivated"));
     }
 
     void MainWindow::JointCommand(const roboy_communication_middleware::JointCommand::ConstPtr &msg) {
@@ -1031,34 +1035,34 @@ namespace interface {
 
     void MainWindow::DanceCommand(const roboy_communication_middleware::DanceCommand::ConstPtr &msg) {
         QString str;
-        str.sprintf("target position %lf\t%lf\t%lf",msg->pos.x,msg->pos.y,msg->pos.z);
+        str.sprintf("target position %lf\t%lf\t%lf", msg->pos.x, msg->pos.y, msg->pos.z);
         ui.target_position->append(str);
         ui.target_position->verticalScrollBar()->setValue(ui.target_position->verticalScrollBar()->maximum());
     }
 
-    void MainWindow::DarkRoomSensor(const roboy_communication_middleware::DarkRoomSensor::ConstPtr &msg){
-        ROS_INFO_THROTTLE(5, "receiving DarkRoom sensor locations for %ld sensors", msg->ids.size());
+    void MainWindow::DarkRoomSensor(const roboy_communication_middleware::DarkRoomSensor::ConstPtr &msg) {
         uint i = 0;
-        for(auto position:msg->position){
+        for (auto position:msg->position) {
             sensor_position[sensor_map[msg->ids[i]]] = Vector3d(position.x, position.y, position.z);
             char str[10];
             sprintf(str, "%d", sensor_map[msg->ids[i]]);
-            publishText(sensor_position[sensor_map[msg->ids[i]]],str,"world","sensor_names",i+9000/*random message id*/,
-                        COLOR(0, 1, 0, 0.1),1,0.05);
+            publishText(sensor_position[sensor_map[msg->ids[i]]], str, "world", "sensor_names",
+                        i + 9000/*random message id*/,
+                        COLOR(0, 1, 0, 0.1), 1, 0.05);
             i++;
         }
-        if(sensor_position.find(3)==sensor_position.end() && sensor_position.find(5)==sensor_position.end()){
+        if (sensor_position.find(3) == sensor_position.end() && sensor_position.find(5) == sensor_position.end()) {
             ROS_WARN("sensor 3 and/or 5 not active");
             return;
         }
-        vector<int> ids = {0,8,3,5};
-        std::pair<Vector3d, Vector3d> plane = best_plane_from_points(sensor_position,ids);
+        vector<int> ids = {0, 8, 3, 5};
+        std::pair<Vector3d, Vector3d> plane = best_plane_from_points(sensor_position, ids);
 //            ROS_INFO_STREAM_THROTTLE(1,"centroid\n" << plane.first << "\nnormal:\n" << plane.second);
 
-        if(plane.second[1]<0)
+        if (plane.second[1] < 0)
             plane.second = -plane.second;
 
-        Vector3d hip_level = sensor_position[5]-sensor_position[3];
+        Vector3d hip_level = sensor_position[5] - sensor_position[3];
         Vector3d y = plane.second.cross(hip_level);
         Vector3d x = y.cross(plane.second);
         x.normalize();
@@ -1071,86 +1075,141 @@ namespace interface {
         //calculate angle to world from hip orientation (sensor 3 and 5) via kinematic chain
         double angle = calculateAngleBetween(sensor_position[3], sensor_position[5], x);
         char str[20];
-        sprintf(str,"%lf", angle);
-        publishText(sensor_position[3],str,"world","angle_to_world_hip",667,COLOR(1,0,0,1),1,0.05);
+        sprintf(str, "%lf", angle);
+        publishText(sensor_position[3], str, "world", "angle_to_world_hip", 667, COLOR(1, 0, 0, 1), 1, 0.05);
         phi = angle + jointData[0][2][1].back() + jointData[0][3][1].back();
-        sprintf(str,"%lf", phi);
-        publishText(sensor_position[0],str,"world","angle_to_world_ankle_left",668,COLOR(1,0,0,1),1,0.05);
+        sprintf(str, "%lf", phi);
+        publishText(sensor_position[0], str, "world", "angle_to_world_ankle_left", 668, COLOR(1, 0, 0, 1), 1, 0.05);
 
-        tf::Matrix3x3 rot(x[0],x[1],x[2],y[0],y[1],y[2],plane.second[0],plane.second[1],plane.second[2]);
+        tf::Matrix3x3 rot(x[0], x[1], x[2], y[0], y[1], y[2], plane.second[0], plane.second[1], plane.second[2]);
         relativeFrame.setOrigin(tf::Vector3(sensor_position[0][0], sensor_position[0][1], sensor_position[0][2]));
 //        tf::Quaternion quat;
 //        quat.setRPY(M_PI_2, 0, M_PI);
         relativeFrame.setBasis(rot);
-        tf_broadcaster.sendTransform(tf::StampedTransform(relativeFrame,ros::Time::now(),"world","ankle_left"));
-        if(visualServoing){
+        tf_broadcaster.sendTransform(tf::StampedTransform(relativeFrame, ros::Time::now(), "world", "ankle_left"));
+        if (visualServoing) {
+            Vector4d hip_sensor(sensor_position[4][0], sensor_position[4][1], sensor_position[4][2], 1), hip_sensor_ankle_frame,
+                    ankle_right(sensor_position[8][0], sensor_position[8][1], sensor_position[8][2],1),
+                    ankle_right_ankle_left_frame;
+            Eigen::Affine3d trans_;
+            tf::transformTFToEigen(relativeFrame, trans_);
+            Matrix4d transform;
+            transform = trans_.matrix();
+
+            hip_sensor_ankle_frame = transform.inverse() * hip_sensor;
+            ankle_right_ankle_left_frame = transform.inverse() * ankle_right;
+            ROS_INFO_THROTTLE(1, "hip sensor in ankle frame %f\t%f\t%f", hip_sensor_ankle_frame[0],
+                              hip_sensor_ankle_frame[1], hip_sensor_ankle_frame[2]);
+
+            int messageId = 88888;
+
+
+//            roboy_communication_middleware::InverseKinematics service_msg;
+//            service_msg.request.targetPosition.x = hip_sensor_ankle_frame[0];
+//            service_msg.request.targetPosition.y = hip_sensor_ankle_frame[1];
+//            service_msg.request.targetPosition.z = 0;//hip_sensor_ankle_frame[2];
+//            service_msg.request.ankle_left.x = 0;
+//            service_msg.request.ankle_left.y = 0;
+//            service_msg.request.ankle_left.z = 0;
+//            service_msg.request.ankle_right_sensor.x = ankle_right_ankle_left_frame[0];
+//            service_msg.request.ankle_right_sensor.y = ankle_right_ankle_left_frame[1];
+//            service_msg.request.ankle_right_sensor.z = 0;
+//            service_msg.request.lighthouse_sensor_id = 4; // hip center lighthouse sensor
+//            service_msg.request.initial_angles.push_back(jointData[0][0][1].back());
+//            service_msg.request.initial_angles.push_back(jointData[0][1][1].back());
+//            service_msg.request.initial_angles.push_back(jointData[0][2][1].back());
+//            service_msg.request.initial_angles.push_back(jointData[0][3][1].back());
+//            service_msg.request.initial_angles.push_back(phi);
+//            service_msg.request.inspect = false;
+//            if (!ik_srv.call(service_msg)) {
+//                ROS_ERROR_THROTTLE(1, "ik of initial pose failed");
+//            }
+//
+//            for (uint i = 1; i < 9; i++) {
+//                Vector3d pos0, pos1;
+//                convertGeometryToEigen(service_msg.response.resultPosition[i - 1], pos0);
+//                convertGeometryToEigen(service_msg.response.resultPosition[i], pos1);
+//                Vector3d dir = pos1 - pos0;
+//                publishRay(pos0, dir, "ankle_left", "ik_solution_initial", messageId++, COLOR(0, 1, 0, 0.3), 1);
+//            }
+
             roboy_communication_middleware::InverseKinematics service_msg;
-            service_msg.request.targetPosition.x = targetPosition[0] + resultVisualServoing[0];
-            service_msg.request.targetPosition.y = targetPosition[1] + resultVisualServoing[1];
+            service_msg.request.targetPosition.x = targetPosition[0];
+            service_msg.request.targetPosition.y = targetPosition[1];
             service_msg.request.targetPosition.z = targetPosition[2];
-            service_msg.request.ankle_x = 0;
-            service_msg.request.ankle_y = 0;
             service_msg.request.lighthouse_sensor_id = 4; // hip center lighthouse sensor
+            service_msg.request.ankle_right_sensor.x = ankle_right_ankle_left_frame[0];
+            service_msg.request.ankle_right_sensor.y = ankle_right_ankle_left_frame[1];
+            service_msg.request.ankle_right_sensor.z = 0;
             service_msg.request.initial_angles.push_back(jointData[0][0][1].back());
             service_msg.request.initial_angles.push_back(jointData[0][1][1].back());
             service_msg.request.initial_angles.push_back(jointData[0][2][1].back());
             service_msg.request.initial_angles.push_back(jointData[0][3][1].back());
             service_msg.request.initial_angles.push_back(phi);
-            service_msg.request.inspect = false;
-            if(!ik_srv.call(service_msg)){
+            if (!ik_srv.call(service_msg)) {
+                ROS_ERROR_THROTTLE(1, "ik of result pose failed");
                 return;
             }
 
-            ROS_INFO_THROTTLE(1,"targetPosition:\n%lf\t%lf\t%lf\n"
+            for (uint j = 1; j < 9; j++) {
+                Vector3d pos0, pos1;
+                pos0 = convertGeometryToEigen(service_msg.response.resultPosition[j - 1]);
+                pos1 = convertGeometryToEigen(service_msg.response.resultPosition[j]);
+                Vector3d dir = pos1 - pos0;
+                publishRay(pos0, dir, "ankle_left", "ik_solution_result", messageId++, COLOR(0, 1, 0, 0.3), 1);
+            }
+
+            ROS_INFO_THROTTLE(1, "targetPosition:\n%lf\t%lf\t%lf\n"
                     "resultPosition:\n%lf\t%lf\t%lf",
-                              targetPosition[0],targetPosition[1],targetPosition[2],
-                              service_msg.response.resultPosition.x, service_msg.response.resultPosition.y,
-                              service_msg.response.resultPosition.z);
+                              targetPosition[0], targetPosition[1], targetPosition[2],
+                              service_msg.response.resultPosition[4].x, service_msg.response.resultPosition[4].y,
+                              service_msg.response.resultPosition[4].z);
 
             setPointAngle[0] = service_msg.response.angles[0];
             setPointAngle[1] = service_msg.response.angles[1];
             setPointAngle[2] = service_msg.response.angles[2];
             setPointAngle[3] = service_msg.response.angles[3];
 
-            Vector2d resultPosition(service_msg.response.resultPosition.x, service_msg.response.resultPosition.y);
-            Vector2d targetPosition(targetPosition[0]+sensor_position[0][0], targetPosition[1]+sensor_position[0][1]);
-            errorVisualServoing = targetPosition-resultPosition;
+            Vector2d resultPosition(service_msg.response.resultPosition[4].x, service_msg.response.resultPosition[4].y);
+            Vector2d targetPosition(targetPosition[0] + sensor_position[0][0],
+                                    targetPosition[1] + sensor_position[0][1]);
+            errorVisualServoing = targetPosition - resultPosition;
             errorVisualServoing_prev = errorVisualServoing;
 
-            Vector2d pterm = atof(ui.Kp_danceControl->text().toStdString().c_str())*errorVisualServoing;
-            Vector2d dterm = atof(ui.Kd_danceControl->text().toStdString().c_str())*(errorVisualServoing-errorVisualServoing_prev);
-            integralVisualServoing += atof(ui.Ki_danceControl->text().toStdString().c_str())*errorVisualServoing;
-            if (integralVisualServoing[0] >= atof(ui.integralMaxX->text().toStdString().c_str())){
+            Vector2d pterm = atof(ui.Kp_danceControl->text().toStdString().c_str()) * errorVisualServoing;
+            Vector2d dterm = atof(ui.Kd_danceControl->text().toStdString().c_str()) *
+                             (errorVisualServoing - errorVisualServoing_prev);
+            integralVisualServoing += atof(ui.Ki_danceControl->text().toStdString().c_str()) * errorVisualServoing;
+            if (integralVisualServoing[0] >= atof(ui.integralMaxX->text().toStdString().c_str())) {
                 integralVisualServoing[0] = integralVisualServoingMax[0];
-            } else if (integralVisualServoing[0] <= atof(ui.integralMinX->text().toStdString().c_str())){
+            } else if (integralVisualServoing[0] <= atof(ui.integralMinX->text().toStdString().c_str())) {
                 integralVisualServoing[0] = integralVisualServoingMin[0];
             }
-            if (integralVisualServoing[1] >= atof(ui.integralMaxY->text().toStdString().c_str())){
+            if (integralVisualServoing[1] >= atof(ui.integralMaxY->text().toStdString().c_str())) {
                 integralVisualServoing[1] = integralVisualServoingMax[1];
-            } else if (integralVisualServoing[1] <= atof(ui.integralMinY->text().toStdString().c_str())){
+            } else if (integralVisualServoing[1] <= atof(ui.integralMinY->text().toStdString().c_str())) {
                 integralVisualServoing[1] = integralVisualServoingMin[1];
             }
             resultVisualServoing = pterm + dterm + integralVisualServoing;
         }
     }
 
-    void MainWindow::InteractiveMarkerFeedback(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &msg){
+    void MainWindow::InteractiveMarkerFeedback(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &msg) {
         QString str;
-        str.sprintf("target position %lf\t%lf\t%lf",msg->pose.position.x, msg->pose.position.y, msg->pose.position.z);
+        str.sprintf("target position %lf\t%lf\t%lf", msg->pose.position.x, msg->pose.position.y, msg->pose.position.z);
         targetPosition[0] = msg->pose.position.x;
         targetPosition[1] = msg->pose.position.y;
         targetPosition[2] = msg->pose.position.z;
-                ui.target_position->append(str);
+        ui.target_position->append(str);
         ui.target_position->verticalScrollBar()->setValue(ui.target_position->verticalScrollBar()->maximum());
     }
 
-    std::pair<Vector3d, Vector3d> MainWindow::best_plane_from_points(map<int, Vector3d> & c, vector<int> &ids)
-    {
+    std::pair<Vector3d, Vector3d> MainWindow::best_plane_from_points(map<int, Vector3d> &c, vector<int> &ids) {
         // copy coordinates to  matrix in Eigen format
         size_t num_atoms = ids.size();
-        Eigen::Matrix< Vector3d::Scalar, Eigen::Dynamic, Eigen::Dynamic > coord(3, num_atoms);
+        Eigen::Matrix<Vector3d::Scalar, Eigen::Dynamic, Eigen::Dynamic> coord(3, num_atoms);
         uint i = 0;
-        for(auto &id:ids) {
+        for (auto &id:ids) {
             coord.col(i) = c[id];
             i++;
         }
@@ -1159,7 +1218,9 @@ namespace interface {
         Vector3d centroid(coord.row(0).mean(), coord.row(1).mean(), coord.row(2).mean());
 
         // subtract centroid
-        coord.row(0).array() -= centroid(0); coord.row(1).array() -= centroid(1); coord.row(2).array() -= centroid(2);
+        coord.row(0).array() -= centroid(0);
+        coord.row(1).array() -= centroid(1);
+        coord.row(2).array() -= centroid(2);
 
         // we only need the left-singular matrix here
         //  http://math.stackexchange.com/questions/99299/best-fitting-plane-given-a-set-of-points

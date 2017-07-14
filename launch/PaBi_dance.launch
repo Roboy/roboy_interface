@@ -17,6 +17,7 @@
             type="roboy_interface"
             respawn="false"
             output="screen"
+            launch-prefix="gdb -ex run"
     />
 </launch>
 

@@ -38,6 +38,7 @@
 #include <common_utilities/rviz_visualization.hpp>
 #include <tf/tf.h>
 #include <tf/transform_broadcaster.h>
+#include <tf_conversions/tf_eigen.h>
 
 #define RUN_IN_THREAD
 #define NUMBER_OF_FPGAS 5
