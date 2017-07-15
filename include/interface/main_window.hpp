@@ -87,6 +87,7 @@ private:
 	std::pair<Vector3d, Vector3d> best_plane_from_points(map<int, Vector3d> & c, vector<int> &ids);
 	double phi = 0;// angle left lower leg to world
 public Q_SLOTS:
+	void VisualServoing();
 	void on_actionAbout_triggered();
     void updateSetPointsMotorControl(int percent);
     void updateSetPointsMotorControlAll(int percent);
@@ -109,6 +110,7 @@ public Q_SLOTS:
 Q_SIGNALS:
     void newData(int id);
     void drawImage();
+	void DarkRoomSensorDataReady();
 private:
 	Ui::MainWindowDesign ui;
     ros::NodeHandlePtr nh;

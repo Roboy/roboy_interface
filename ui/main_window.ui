@@ -597,7 +597,7 @@
      <item>
       <widget class="QTabWidget" name="tabWidget">
        <property name="currentIndex">
-        <number>2</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="tab">
         <attribute name="title">
@@ -772,7 +772,7 @@
           <property name="frameShadow">
            <enum>QFrame::Raised</enum>
           </property>
-          <widget class="QLineEdit" name="forwardGain">
+          <widget class="QLineEdit" name="outputMax">
            <property name="geometry">
             <rect>
              <x>110</x>
@@ -782,7 +782,7 @@
             </rect>
            </property>
            <property name="text">
-            <string>0</string>
+            <string>1000</string>
            </property>
           </widget>
           <widget class="QLabel" name="label_4">
@@ -795,7 +795,7 @@
             </rect>
            </property>
            <property name="text">
-            <string>forwardGain</string>
+            <string>outputMax</string>
            </property>
           </widget>
          </widget>
@@ -3105,7 +3105,7 @@
            </rect>
           </property>
           <property name="text">
-           <string>0.01</string>
+           <string>80</string>
           </property>
          </widget>
          <widget class="QLabel" name="label_52">
@@ -3147,7 +3147,7 @@
            </rect>
           </property>
           <property name="text">
-           <string>0.01</string>
+           <string>20</string>
           </property>
          </widget>
          <widget class="QLabel" name="label_53">

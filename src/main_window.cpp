@@ -39,6 +39,7 @@ namespace interface {
 
         QObject::connect(this, SIGNAL(newData(int)), this, SLOT(plotData(int)));
         QObject::connect(this, SIGNAL(drawImage()), this, SLOT(displayImage()));
+        QObject::connect(this, SIGNAL(DarkRoomSensorDataReady()), this, SLOT(VisualServoing()));
 
         QObject::connect(ui.motor0, SIGNAL(valueChanged(int)), this, SLOT(updateSetPointsMotorControl(int)));
         QObject::connect(ui.motor1, SIGNAL(valueChanged(int)), this, SLOT(updateSetPointsMotorControl(int)));
@@ -110,7 +111,7 @@ namespace interface {
                 "/roboy/middleware/PaBiRoboy/inverseKinematics");
         darkroom_sub = nh->subscribe("/roboy/middleware/DarkRoom/sensor_location", 1, &MainWindow::DarkRoomSensor,
                                      this);
-        visualization_pub = nh->advertise<visualization_msgs::Marker>("visualization_marker", 100);
+        visualization_pub = nh->advertise<visualization_msgs::Marker>("visualization_marker", 1);
 
         interactive_marker_sub = nh->subscribe("/hip_position/feedback", 1, &MainWindow::InteractiveMarkerFeedback,
                                                this);
@@ -1055,7 +1056,7 @@ namespace interface {
             ROS_WARN("sensor 3 and/or 5 not active");
             return;
         }
-        vector<int> ids = {0, 8, 3, 5};
+        vector<int> ids = {0, 3, 5, 8};
         std::pair<Vector3d, Vector3d> plane = best_plane_from_points(sensor_position, ids);
 //            ROS_INFO_STREAM_THROTTLE(1,"centroid\n" << plane.first << "\nnormal:\n" << plane.second);
 
@@ -1081,13 +1082,19 @@ namespace interface {
         sprintf(str, "%lf", phi);
         publishText(sensor_position[0], str, "world", "angle_to_world_ankle_left", 668, COLOR(1, 0, 0, 1), 1, 0.05);
 
-        tf::Matrix3x3 rot(x[0], x[1], x[2], y[0], y[1], y[2], plane.second[0], plane.second[1], plane.second[2]);
+        tf::Matrix3x3 rot(x[0], y[0], plane.second[0], x[1], y[1], plane.second[1], x[2], y[2], plane.second[2]);
         relativeFrame.setOrigin(tf::Vector3(sensor_position[0][0], sensor_position[0][1], sensor_position[0][2]));
 //        tf::Quaternion quat;
 //        quat.setRPY(M_PI_2, 0, M_PI);
         relativeFrame.setBasis(rot);
         tf_broadcaster.sendTransform(tf::StampedTransform(relativeFrame, ros::Time::now(), "world", "ankle_left"));
-        if (visualServoing) {
+        Q_EMIT DarkRoomSensorDataReady();
+    }
+
+    void MainWindow::VisualServoing(){
+        static ros::Time control_prev = ros::Time::now();
+        ros::Time control_cur = ros::Time::now();
+        if (visualServoing && (control_cur-control_prev).nsec > 100000) {
             Vector4d hip_sensor(sensor_position[4][0], sensor_position[4][1], sensor_position[4][2], 1), hip_sensor_ankle_frame,
                     ankle_right(sensor_position[8][0], sensor_position[8][1], sensor_position[8][2],1),
                     ankle_right_ankle_left_frame;
@@ -1102,36 +1109,6 @@ namespace interface {
                               hip_sensor_ankle_frame[1], hip_sensor_ankle_frame[2]);
 
             int messageId = 88888;
-
-
-//            roboy_communication_middleware::InverseKinematics service_msg;
-//            service_msg.request.targetPosition.x = hip_sensor_ankle_frame[0];
-//            service_msg.request.targetPosition.y = hip_sensor_ankle_frame[1];
-//            service_msg.request.targetPosition.z = 0;//hip_sensor_ankle_frame[2];
-//            service_msg.request.ankle_left.x = 0;
-//            service_msg.request.ankle_left.y = 0;
-//            service_msg.request.ankle_left.z = 0;
-//            service_msg.request.ankle_right_sensor.x = ankle_right_ankle_left_frame[0];
-//            service_msg.request.ankle_right_sensor.y = ankle_right_ankle_left_frame[1];
-//            service_msg.request.ankle_right_sensor.z = 0;
-//            service_msg.request.lighthouse_sensor_id = 4; // hip center lighthouse sensor
-//            service_msg.request.initial_angles.push_back(jointData[0][0][1].back());
-//            service_msg.request.initial_angles.push_back(jointData[0][1][1].back());
-//            service_msg.request.initial_angles.push_back(jointData[0][2][1].back());
-//            service_msg.request.initial_angles.push_back(jointData[0][3][1].back());
-//            service_msg.request.initial_angles.push_back(phi);
-//            service_msg.request.inspect = false;
-//            if (!ik_srv.call(service_msg)) {
-//                ROS_ERROR_THROTTLE(1, "ik of initial pose failed");
-//            }
-//
-//            for (uint i = 1; i < 9; i++) {
-//                Vector3d pos0, pos1;
-//                convertGeometryToEigen(service_msg.response.resultPosition[i - 1], pos0);
-//                convertGeometryToEigen(service_msg.response.resultPosition[i], pos1);
-//                Vector3d dir = pos1 - pos0;
-//                publishRay(pos0, dir, "ankle_left", "ik_solution_initial", messageId++, COLOR(0, 1, 0, 0.3), 1);
-//            }
 
             roboy_communication_middleware::InverseKinematics service_msg;
             service_msg.request.targetPosition.x = targetPosition[0];
@@ -1156,7 +1133,7 @@ namespace interface {
                 pos0 = convertGeometryToEigen(service_msg.response.resultPosition[j - 1]);
                 pos1 = convertGeometryToEigen(service_msg.response.resultPosition[j]);
                 Vector3d dir = pos1 - pos0;
-                publishRay(pos0, dir, "ankle_left", "ik_solution_result", messageId++, COLOR(0, 1, 0, 0.3), 1);
+                publishRay(pos0, dir, "ankle_left", "ik_solution_result", messageId++, COLOR(0, 1, 0, 0.3), 0.1);
             }
 
             ROS_INFO_THROTTLE(1, "targetPosition:\n%lf\t%lf\t%lf\n"
@@ -1170,27 +1147,27 @@ namespace interface {
             setPointAngle[2] = service_msg.response.angles[2];
             setPointAngle[3] = service_msg.response.angles[3];
 
-            Vector2d resultPosition(service_msg.response.resultPosition[4].x, service_msg.response.resultPosition[4].y);
-            Vector2d targetPosition(targetPosition[0] + sensor_position[0][0],
-                                    targetPosition[1] + sensor_position[0][1]);
-            errorVisualServoing = targetPosition - resultPosition;
-            errorVisualServoing_prev = errorVisualServoing;
-
-            Vector2d pterm = atof(ui.Kp_danceControl->text().toStdString().c_str()) * errorVisualServoing;
-            Vector2d dterm = atof(ui.Kd_danceControl->text().toStdString().c_str()) *
-                             (errorVisualServoing - errorVisualServoing_prev);
-            integralVisualServoing += atof(ui.Ki_danceControl->text().toStdString().c_str()) * errorVisualServoing;
-            if (integralVisualServoing[0] >= atof(ui.integralMaxX->text().toStdString().c_str())) {
-                integralVisualServoing[0] = integralVisualServoingMax[0];
-            } else if (integralVisualServoing[0] <= atof(ui.integralMinX->text().toStdString().c_str())) {
-                integralVisualServoing[0] = integralVisualServoingMin[0];
-            }
-            if (integralVisualServoing[1] >= atof(ui.integralMaxY->text().toStdString().c_str())) {
-                integralVisualServoing[1] = integralVisualServoingMax[1];
-            } else if (integralVisualServoing[1] <= atof(ui.integralMinY->text().toStdString().c_str())) {
-                integralVisualServoing[1] = integralVisualServoingMin[1];
-            }
-            resultVisualServoing = pterm + dterm + integralVisualServoing;
+//            Vector2d resultPosition(service_msg.response.resultPosition[4].x, service_msg.response.resultPosition[4].y);
+//            Vector2d targetPosition(targetPosition[0] + sensor_position[0][0],
+//                                    targetPosition[1] + sensor_position[0][1]);
+//            errorVisualServoing = targetPosition - resultPosition;
+//            errorVisualServoing_prev = errorVisualServoing;
+//
+//            Vector2d pterm = atof(ui.Kp_danceControl->text().toStdString().c_str()) * errorVisualServoing;
+//            Vector2d dterm = atof(ui.Kd_danceControl->text().toStdString().c_str()) *
+//                             (errorVisualServoing - errorVisualServoing_prev);
+//            integralVisualServoing += atof(ui.Ki_danceControl->text().toStdString().c_str()) * errorVisualServoing;
+//            if (integralVisualServoing[0] >= atof(ui.integralMaxX->text().toStdString().c_str())) {
+//                integralVisualServoing[0] = integralVisualServoingMax[0];
+//            } else if (integralVisualServoing[0] <= atof(ui.integralMinX->text().toStdString().c_str())) {
+//                integralVisualServoing[0] = integralVisualServoingMin[0];
+//            }
+//            if (integralVisualServoing[1] >= atof(ui.integralMaxY->text().toStdString().c_str())) {
+//                integralVisualServoing[1] = integralVisualServoingMax[1];
+//            } else if (integralVisualServoing[1] <= atof(ui.integralMinY->text().toStdString().c_str())) {
+//                integralVisualServoing[1] = integralVisualServoingMin[1];
+//            }
+//            resultVisualServoing = pterm + dterm + integralVisualServoing;
         }
     }
 
@@ -1436,8 +1413,14 @@ namespace interface {
         for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
             msg.motors.push_back(motor);
             msg.control_mode.push_back(ui.control_mode->value());
-            msg.outputPosMax.push_back(2000); // pwm max
-            msg.outputNegMax.push_back(-2000); // pwm min
+            int outputMax = atoi(ui.outputMax->text().toStdString().c_str());
+            if(outputMax>=0 && outputMax<=4000) {
+                msg.outputPosMax.push_back(outputMax); // pwm max
+                msg.outputNegMax.push_back(-outputMax); // pwm min
+            }else{
+                msg.outputPosMax.push_back(1000); // pwm max
+                msg.outputNegMax.push_back(-1000); // pwm min
+            }
             msg.spPosMax.push_back(100000000);
             msg.spNegMax.push_back(-100000000);
             msg.IntegralPosMax.push_back(100);
@@ -1445,7 +1428,7 @@ namespace interface {
             msg.Kp.push_back(atoi(ui.Kp->text().toStdString().c_str()));
             msg.Ki.push_back(atoi(ui.Ki->text().toStdString().c_str()));
             msg.Kd.push_back(atoi(ui.Kd->text().toStdString().c_str()));
-            msg.forwardGain.push_back(atoi(ui.forwardGain->text().toStdString().c_str()));
+            msg.forwardGain.push_back(0);
             msg.deadBand.push_back(atoi(ui.deadBand->text().toStdString().c_str()));
         }
         motorConfig.publish(msg);
