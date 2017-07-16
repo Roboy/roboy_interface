@@ -1,22 +1,5 @@
-/**
- * @file /src/main.cpp
- *
- * @brief Qt based gui.
- *
- * @date November 2010
- **/
-/*****************************************************************************
-** Includes
-*****************************************************************************/
-
 #include <QtGui>
-#include <QApplication>
-#include "interface/main_window.hpp"
-#include "roboy_managing_node/myoMaster.hpp"
-
-/*****************************************************************************
-** Main
-*****************************************************************************/
+#include <roboy_interface/main_window.hpp>
 
 int main(int argc, char **argv) {
 
@@ -24,9 +7,6 @@ int main(int argc, char **argv) {
     myoMaster.initialize(argc,argv);
     myoMaster.start();
 
-    /*********************
-    ** Qt
-    **********************/
     QApplication app(argc, argv);
     interface::MainWindow w(argc,argv);
     w.myoMaster = &myoMaster;

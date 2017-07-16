@@ -1,30 +1,8 @@
-/**
- * @file /src/main_window.cpp
- *
- * @brief Implementation for the qt gui.
- *
- * @date February 2011
- **/
-/*****************************************************************************
-** Includes
-*****************************************************************************/
-
-#include <QtGui>
-#include <QMessageBox>
-#include <iostream>
-#include "interface/main_window.hpp"
-
-/*****************************************************************************
-** Namespaces
-*****************************************************************************/
+#include <roboy_interface/main_window.hpp>
 
 namespace interface {
 
     using namespace Qt;
-
-/*****************************************************************************
-** Implementation [MainWindow]
-*****************************************************************************/
 
     MainWindow::MainWindow(int argc, char **argv, QWidget *parent)
             : QMainWindow(parent) {
@@ -115,6 +93,9 @@ namespace interface {
 
         interactive_marker_sub = nh->subscribe("/hip_position/feedback", 1, &MainWindow::InteractiveMarkerFeedback,
                                                this);
+
+        danceService = nh->advertiseService("/roboy/middleware/PaBiRoboy/danceTrajectory",
+                                            &MainWindow::danceTrajectory, this);
 
         spinner = boost::shared_ptr<ros::AsyncSpinner>(new ros::AsyncSpinner(5));
         spinner->start();
@@ -464,7 +445,7 @@ namespace interface {
             float integral[NUMBER_OF_JOINT_SENSORS];
             float integral_max = 360;
             const float smooth_distance = 50;
-            const float offset = 20;
+            const float offset = 200;
             static float error_previous[NUMBER_OF_JOINT_SENSORS] = {0.0f, 0.0f, 0.0f, 0.0f};
             for (uint joint = 0; joint < NUMBER_OF_JOINT_SENSORS; joint++) {
                 error[joint] = setPointAngle[joint] - jointData[msg->id][joint][1].back();
@@ -1091,12 +1072,13 @@ namespace interface {
         Q_EMIT DarkRoomSensorDataReady();
     }
 
-    void MainWindow::VisualServoing(){
+    void MainWindow::VisualServoing() {
         static ros::Time control_prev = ros::Time::now();
         ros::Time control_cur = ros::Time::now();
-        if (visualServoing && (control_cur-control_prev).nsec > 100000) {
-            Vector4d hip_sensor(sensor_position[4][0], sensor_position[4][1], sensor_position[4][2], 1), hip_sensor_ankle_frame,
-                    ankle_right(sensor_position[8][0], sensor_position[8][1], sensor_position[8][2],1),
+        if (visualServoing && (control_cur - control_prev).nsec > 100000) {
+            Vector4d hip_sensor(sensor_position[4][0], sensor_position[4][1], sensor_position[4][2],
+                                1), hip_sensor_ankle_frame,
+                    ankle_right(sensor_position[8][0], sensor_position[8][1], sensor_position[8][2], 1),
                     ankle_right_ankle_left_frame;
             Eigen::Affine3d trans_;
             tf::transformTFToEigen(relativeFrame, trans_);
@@ -1204,6 +1186,31 @@ namespace interface {
         auto svd = coord.jacobiSvd(Eigen::ComputeThinU | Eigen::ComputeThinV);
         Vector3d plane_normal = svd.matrixU().rightCols<1>();
         return std::make_pair(centroid, plane_normal);
+    }
+
+    bool MainWindow::danceTrajectory(roboy_communication_middleware::DanceTrajectory::Request &req,
+                                     roboy_communication_middleware::DanceTrajectory::Response &res) {
+        std::ifstream i(req.trajectory_name);
+        if (!i.is_open()) {
+            ROS_ERROR("could not find trajectory %s", req.trajectory_name.c_str());
+            return false;
+        }
+        json j;
+        i >> j;
+        jointControl = false;
+        motorControl = false,
+                dance = true;
+        for (uint k = 1; k < j["setpoints"].size(); k++) {
+            ros::Duration d(((double)j["setpoints"][k][0] - (double)j["setpoints"][k - 1][0]));
+            setPointAngle[0] = j["setpoints"][k - 1][1];
+            setPointAngle[1] = j["setpoints"][k - 1][2];
+            setPointAngle[2] = j["setpoints"][k - 1][3];
+            setPointAngle[3] = j["setpoints"][k - 1][4];
+            ROS_INFO_THROTTLE(1,"setPoint at %lf: %f\t%f\t%f\t%f", j["setpoints"][k][0], setPointAngle[0], setPointAngle[1],
+                     setPointAngle[2], setPointAngle[3]);
+            d.sleep();
+        }
+        return true;
     }
 
     void MainWindow::ArucoPose(const roboy_communication_middleware::ArucoPose::ConstPtr &msg) {
@@ -1414,10 +1421,10 @@ namespace interface {
             msg.motors.push_back(motor);
             msg.control_mode.push_back(ui.control_mode->value());
             int outputMax = atoi(ui.outputMax->text().toStdString().c_str());
-            if(outputMax>=0 && outputMax<=4000) {
+            if (outputMax >= 0 && outputMax <= 4000) {
                 msg.outputPosMax.push_back(outputMax); // pwm max
                 msg.outputNegMax.push_back(-outputMax); // pwm min
-            }else{
+            } else {
                 msg.outputPosMax.push_back(1000); // pwm max
                 msg.outputNegMax.push_back(-1000); // pwm min
             }

@@ -54,7 +54,7 @@ rosbuild_prepare_qt4(QtCore QtGui) # Add the appropriate components to the compo
 
 file(GLOB QT_FORMS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ui/*.ui)
 file(GLOB QT_RESOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} resources/*.qrc)
-set(QT_MOC include/interface/main_window.hpp qcustomplot/qcustomplot.h)
+set(QT_MOC include/roboy_interface/main_window.hpp qcustomplot/qcustomplot.h)
 
 QT4_ADD_RESOURCES(QT_RESOURCES_CPP ${QT_RESOURCES})
 QT4_WRAP_UI(QT_FORMS_HPP ${QT_FORMS})

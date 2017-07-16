@@ -1,17 +1,10 @@
-/**
- * @file /include/interface/main_window.hpp
- *
- * @brief Qt based gui for interface.
- *
- * @date November 2010
- **/
 #ifndef interface_MAIN_WINDOW_H
 #define interface_MAIN_WINDOW_H
 
-/*****************************************************************************
-** Includes
-*****************************************************************************/
 #ifndef Q_MOC_RUN
+#include <QtGui>
+#include <QMessageBox>
+#include <iostream>
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
@@ -25,6 +18,7 @@
 #include <roboy_communication_middleware/JointAngle.h>
 #include <roboy_communication_middleware/ArucoPose.h>
 #include <roboy_communication_middleware/DanceCommand.h>
+#include <roboy_communication_middleware/DanceTrajectory.h>
 #include <roboy_communication_middleware/DarkRoomSensor.h>
 #include <roboy_communication_middleware/InverseKinematics.h>
 #include <visualization_msgs/InteractiveMarkerFeedback.h>
@@ -39,23 +33,21 @@
 #include <tf/tf.h>
 #include <tf/transform_broadcaster.h>
 #include <tf_conversions/tf_eigen.h>
+#include <roboy_interface/json.hpp>
+
+#endif
 
 #define RUN_IN_THREAD
 #define NUMBER_OF_FPGAS 5
 #define NUMBER_OF_MOTORS_PER_FPGA 14
 #define NUMBER_OF_JOINT_SENSORS 4
 
-#endif
-
-/*****************************************************************************
-** Namespace
-*****************************************************************************/
-
 enum PLOTDATA{ MOTOR, JOINT};
 
 using namespace std;
 using namespace Eigen;
 using namespace cv;
+using json = nlohmann::json;
 
 namespace interface {
 
@@ -85,6 +77,8 @@ private:
 	void DarkRoomSensor(const roboy_communication_middleware::DarkRoomSensor::ConstPtr &msg);
 	void InteractiveMarkerFeedback(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &msg);
 	std::pair<Vector3d, Vector3d> best_plane_from_points(map<int, Vector3d> & c, vector<int> &ids);
+    bool danceTrajectory(roboy_communication_middleware::DanceTrajectory::Request &req,
+                           roboy_communication_middleware::DanceTrajectory::Response &res);
 	double phi = 0;// angle left lower leg to world
 public Q_SLOTS:
 	void VisualServoing();
@@ -118,6 +112,7 @@ private:
             jointCommand_pub, jointAnglesOffset_pub, visualization_pub, danceCommand_pub;
     ros::Subscriber motorStatus, motorRecord, jointStatus, jointCommand, realsense, arucoPose, danceCommand, darkroom_sub,
             interactive_marker_sub;
+    ros::ServiceServer danceService;
     QVector<double> time;
     QVector<double> motorData[NUMBER_OF_FPGAS][NUMBER_OF_MOTORS_PER_FPGA][4];
 	QVector<double> jointData[NUMBER_OF_FPGAS][NUMBER_OF_JOINT_SENSORS][4];
