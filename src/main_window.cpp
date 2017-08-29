@@ -98,43 +98,6 @@ MainWindow::MainWindow(int argc, char **argv, QWidget *parent)
     ui.current_plot->yAxis->setLabel("mA");
     ui.current_plot->replot();
 
-    ui.relAngle0_plot->addGraph();
-    ui.relAngle0_plot->graph(0)->setPen(QPen(color_pallette[0]));
-    ui.relAngle0_plot->addGraph();
-    ui.relAngle0_plot->graph(1)->setPen(QPen(Qt::gray));
-    ui.relAngle0_plot->xAxis->setLabel("x");
-    ui.relAngle0_plot->yAxis->setLabel("degrees");
-    ui.relAngle0_plot->yAxis->setRange(-100, 100);
-
-    ui.relAngle1_plot->addGraph();
-    ui.relAngle1_plot->graph(0)->setPen(QPen(color_pallette[1]));
-    ui.relAngle1_plot->addGraph();
-    ui.relAngle1_plot->graph(1)->setPen(QPen(Qt::gray));
-    ui.relAngle1_plot->xAxis->setLabel("x");
-    ui.relAngle1_plot->yAxis->setLabel("degrees");
-    ui.relAngle1_plot->yAxis->setRange(-100, 100);
-
-    ui.relAngle2_plot->addGraph();
-    ui.relAngle2_plot->graph(0)->setPen(QPen(color_pallette[2]));
-    ui.relAngle2_plot->addGraph();
-    ui.relAngle2_plot->graph(1)->setPen(QPen(Qt::gray));
-    ui.relAngle2_plot->xAxis->setLabel("x");
-    ui.relAngle2_plot->yAxis->setLabel("degrees");
-    ui.relAngle2_plot->yAxis->setRange(-100, 100);
-
-    ui.relAngle3_plot->addGraph();
-    ui.relAngle3_plot->graph(0)->setPen(QPen(color_pallette[3]));
-    ui.relAngle3_plot->addGraph();
-    ui.relAngle3_plot->graph(1)->setPen(QPen(Qt::gray));
-    ui.relAngle3_plot->xAxis->setLabel("x");
-    ui.relAngle3_plot->yAxis->setLabel("degrees");
-    ui.relAngle3_plot->yAxis->setRange(-100, 100);
-
-    ui.relAngle0_plot->replot();
-    ui.relAngle1_plot->replot();
-    ui.relAngle2_plot->replot();
-    ui.relAngle3_plot->replot();
-
     updateControllerParams();
 
     model = new QFileSystemModel;

@@ -24,6 +24,9 @@
    <layout class="QHBoxLayout">
     <item>
      <widget class="QTabWidget" name="tab_manager">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
       <property name="minimumSize">
        <size>
         <width>100</width>
@@ -37,7 +40,7 @@
        <locale language="English" country="Australia"/>
       </property>
       <property name="currentIndex">
-       <number>3</number>
+       <number>1</number>
       </property>
       <property name="movable">
        <bool>true</bool>
@@ -435,6 +438,773 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="fpgaStatus">
+       <attribute name="title">
+        <string>connectivity</string>
+       </attribute>
+       <widget class="QFrame" name="frame_53">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>10</y>
+          <width>151</width>
+          <height>191</height>
+         </rect>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
+        </property>
+        <widget class="QPushButton" name="reboot_0">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>160</y>
+           <width>99</width>
+           <height>27</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>reboot</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="enable_0">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>100</y>
+           <width>99</width>
+           <height>27</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>enable</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_58">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>70</y>
+           <width>21</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>IP</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="active_0">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>40</y>
+           <width>97</width>
+           <height>22</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>active</string>
+         </property>
+         <property name="checkable">
+          <bool>false</bool>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="shutdown_0">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>130</y>
+           <width>99</width>
+           <height>27</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>shutdown</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="IP_0">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>70</y>
+           <width>113</width>
+           <height>27</height>
+          </rect>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_59">
+         <property name="geometry">
+          <rect>
+           <x>40</x>
+           <y>0</y>
+           <width>71</width>
+           <height>31</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>16</pointsize>
+           <italic>true</italic>
+          </font>
+         </property>
+         <property name="text">
+          <string>FPGA 0</string>
+         </property>
+        </widget>
+        <zorder>reboot_0</zorder>
+        <zorder>enable_0</zorder>
+        <zorder>active_0</zorder>
+        <zorder>shutdown_0</zorder>
+        <zorder>IP_0</zorder>
+        <zorder>reboot_0</zorder>
+        <zorder>enable_0</zorder>
+        <zorder>label_58</zorder>
+        <zorder>active_0</zorder>
+        <zorder>shutdown_0</zorder>
+        <zorder>IP_0</zorder>
+        <zorder>label_59</zorder>
+       </widget>
+       <widget class="QFrame" name="frame_54">
+        <property name="geometry">
+         <rect>
+          <x>160</x>
+          <y>10</y>
+          <width>151</width>
+          <height>191</height>
+         </rect>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
+        </property>
+        <widget class="QPushButton" name="reboot_1">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>160</y>
+           <width>99</width>
+           <height>27</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>reboot</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="enable_1">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>100</y>
+           <width>99</width>
+           <height>27</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>enable</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_60">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>70</y>
+           <width>21</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>IP</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="active_1">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>40</y>
+           <width>97</width>
+           <height>22</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>active</string>
+         </property>
+         <property name="checkable">
+          <bool>false</bool>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="shutdown_1">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>130</y>
+           <width>99</width>
+           <height>27</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>shutdown</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="IP_1">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>70</y>
+           <width>113</width>
+           <height>27</height>
+          </rect>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_61">
+         <property name="geometry">
+          <rect>
+           <x>40</x>
+           <y>0</y>
+           <width>71</width>
+           <height>31</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>16</pointsize>
+           <italic>true</italic>
+          </font>
+         </property>
+         <property name="text">
+          <string>FPGA 1</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QFrame" name="frame_55">
+        <property name="geometry">
+         <rect>
+          <x>310</x>
+          <y>10</y>
+          <width>151</width>
+          <height>191</height>
+         </rect>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
+        </property>
+        <widget class="QPushButton" name="reboot_2">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>160</y>
+           <width>99</width>
+           <height>27</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>reboot</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="enable_2">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>100</y>
+           <width>99</width>
+           <height>27</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>enable</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_62">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>70</y>
+           <width>21</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>IP</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="active_2">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>40</y>
+           <width>97</width>
+           <height>22</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>active</string>
+         </property>
+         <property name="checkable">
+          <bool>false</bool>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="shutdown_2">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>130</y>
+           <width>99</width>
+           <height>27</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>shutdown</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="IP_2">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>70</y>
+           <width>113</width>
+           <height>27</height>
+          </rect>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_63">
+         <property name="geometry">
+          <rect>
+           <x>40</x>
+           <y>0</y>
+           <width>71</width>
+           <height>31</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>16</pointsize>
+           <italic>true</italic>
+          </font>
+         </property>
+         <property name="text">
+          <string>FPGA 2</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QFrame" name="frame_56">
+        <property name="geometry">
+         <rect>
+          <x>460</x>
+          <y>10</y>
+          <width>151</width>
+          <height>191</height>
+         </rect>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
+        </property>
+        <widget class="QPushButton" name="reboot_3">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>160</y>
+           <width>99</width>
+           <height>27</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>reboot</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="enable_3">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>100</y>
+           <width>99</width>
+           <height>27</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>enable</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_64">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>70</y>
+           <width>21</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>IP</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="active_3">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>40</y>
+           <width>97</width>
+           <height>22</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>active</string>
+         </property>
+         <property name="checkable">
+          <bool>false</bool>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="shutdown_3">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>130</y>
+           <width>99</width>
+           <height>27</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>shutdown</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="IP_3">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>70</y>
+           <width>113</width>
+           <height>27</height>
+          </rect>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_65">
+         <property name="geometry">
+          <rect>
+           <x>40</x>
+           <y>0</y>
+           <width>71</width>
+           <height>31</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>16</pointsize>
+           <italic>true</italic>
+          </font>
+         </property>
+         <property name="text">
+          <string>FPGA 3</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QFrame" name="frame_57">
+        <property name="geometry">
+         <rect>
+          <x>610</x>
+          <y>10</y>
+          <width>151</width>
+          <height>191</height>
+         </rect>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
+        </property>
+        <widget class="QPushButton" name="reboot_4">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>160</y>
+           <width>99</width>
+           <height>27</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>reboot</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="enable_4">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>100</y>
+           <width>99</width>
+           <height>27</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>enable</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_66">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>70</y>
+           <width>21</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>IP</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="active_4">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>40</y>
+           <width>97</width>
+           <height>22</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>active</string>
+         </property>
+         <property name="checkable">
+          <bool>false</bool>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="shutdown_4">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>130</y>
+           <width>99</width>
+           <height>27</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>shutdown</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="IP_4">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>70</y>
+           <width>113</width>
+           <height>27</height>
+          </rect>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_67">
+         <property name="geometry">
+          <rect>
+           <x>40</x>
+           <y>0</y>
+           <width>71</width>
+           <height>31</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>16</pointsize>
+           <italic>true</italic>
+          </font>
+         </property>
+         <property name="text">
+          <string>FPGA 4</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QFrame" name="frame_58">
+        <property name="geometry">
+         <rect>
+          <x>760</x>
+          <y>10</y>
+          <width>151</width>
+          <height>191</height>
+         </rect>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
+        </property>
+        <widget class="QPushButton" name="reboot_5">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>160</y>
+           <width>99</width>
+           <height>27</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>reboot</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="enable_5">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>100</y>
+           <width>99</width>
+           <height>27</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>enable</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_68">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>70</y>
+           <width>21</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>IP</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="active_5">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>40</y>
+           <width>97</width>
+           <height>22</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>active</string>
+         </property>
+         <property name="checkable">
+          <bool>false</bool>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="shutdown_5">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>130</y>
+           <width>99</width>
+           <height>27</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>shutdown</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="IP_5">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>70</y>
+           <width>113</width>
+           <height>27</height>
+          </rect>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_69">
+         <property name="geometry">
+          <rect>
+           <x>40</x>
+           <y>0</y>
+           <width>71</width>
+           <height>31</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>16</pointsize>
+           <italic>true</italic>
+          </font>
+         </property>
+         <property name="text">
+          <string>FPGA 5</string>
+         </property>
+        </widget>
+       </widget>
+      </widget>
       <widget class="QWidget" name="motorStatus">
        <attribute name="title">
         <string>MotorStatus</string>
@@ -477,69 +1247,6 @@
           <width>481</width>
           <height>391</height>
          </rect>
-        </property>
-       </widget>
-      </widget>
-      <widget class="QWidget" name="jointStatus">
-       <attribute name="title">
-        <string>JointStatus</string>
-       </attribute>
-       <widget class="QCustomPlot" name="relAngle3_plot" native="true">
-        <property name="geometry">
-         <rect>
-          <x>480</x>
-          <y>390</y>
-          <width>481</width>
-          <height>391</height>
-         </rect>
-        </property>
-       </widget>
-       <widget class="QCustomPlot" name="relAngle0_plot" native="true">
-        <property name="geometry">
-         <rect>
-          <x>0</x>
-          <y>0</y>
-          <width>481</width>
-          <height>391</height>
-         </rect>
-        </property>
-       </widget>
-       <widget class="QCustomPlot" name="relAngle1_plot" native="true">
-        <property name="geometry">
-         <rect>
-          <x>480</x>
-          <y>0</y>
-          <width>481</width>
-          <height>391</height>
-         </rect>
-        </property>
-       </widget>
-       <widget class="QCustomPlot" name="relAngle2_plot" native="true">
-        <property name="geometry">
-         <rect>
-          <x>0</x>
-          <y>390</y>
-          <width>481</width>
-          <height>391</height>
-         </rect>
-        </property>
-       </widget>
-      </widget>
-      <widget class="QWidget" name="tab_4">
-       <attribute name="title">
-        <string>DanceStatus</string>
-       </attribute>
-       <widget class="QLabel" name="camera_image">
-        <property name="geometry">
-         <rect>
-          <x>0</x>
-          <y>0</y>
-          <width>951</width>
-          <height>661</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>realsense_dance_control</string>
         </property>
        </widget>
       </widget>
